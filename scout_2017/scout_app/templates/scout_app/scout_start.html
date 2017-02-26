@@ -6,12 +6,7 @@
 		
 		<form action="/scout/scout_start/" method="post">
 		
-		{% csrf_token %}
-		
-		{% for hidden in form.hidden_fields %}
-			{{ hidden }}
-		{% endfor %}<br />
-		
+		{% csrf_token %}		
 		{% for field in form.visible_fields %}
 			{{ field.errors }}
 			{{ field.help_text }}<br />
