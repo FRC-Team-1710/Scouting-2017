@@ -51,4 +51,7 @@ def teleop_input(request):
 
 
 def view_data(request):
-	return render(request, 'scout_app/view_data.html')
+	latest_match_list = TeamData.objects.order_by('team_number')[:6]
+	output = ', '.join(str([m.team_number for m in latest_match_list]))
+	context = {'output' : output}
+	return render(request, 'scout_app/view_data.html', context)
