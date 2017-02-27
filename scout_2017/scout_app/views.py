@@ -49,3 +49,6 @@ def teleop_input(request):
 
         return render(request, 'scout_app/scout_teleop.html', {'form' : form})
 
+
+def view_data(request):
+	return render(request, 'scout_app/view_data.html')
