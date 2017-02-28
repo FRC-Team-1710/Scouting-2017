@@ -1,16 +1,39 @@
 <!DOCTYPE html>
 
 <html>
+	{% load static %}
+
+	<link rel="stylesheet" type="text/css" href="{% static 'scout_app/team_results_styles.css' %}" />
 	<body>
 		<h1> Results for {{ team_number }} </h1>
 		{% if team_auto_data %}
+			<h3>Auto Data</h3>
+			<table id="auto_table">
+				<tr>
+				    <th>Match Number</th>
+                                    <th>Baseline Cross</th>
+				</tr>
 			{% for team in team_auto_data %}
-				<li><h4>Crossed baseline: {{ team.baseline_crossed }}</h4></li>
+				<tr>
+				    <td>{{ team.match_number }}</td>
+				    <td>{{ team.baseline_crossed }}</td>
+				</tr>
 			{% endfor %}
-			
+			</table>
+
+			<h3>Teleop Data</h3>
+			<table id="teleop_table">
+				<tr>
+				    <th>Match Number</th>
+				    <th>Gears Placed</th>
+				</tr>
 			{% for team in team_teleop_data %}
-				<li><h4>{{ team.gears_placed }}</h4></li>
+				<tr>
+				    <th>{{ team.match_number }}</th>
+				    <th>{{ team.gears_placed }}</th>
+				</tr>				
 			{% endfor %}
+			</table>
 		{% else %}
 			<p>No data for this team</p>
 		{% endif %}	

@@ -6,10 +6,22 @@
 		{% if latest_match_list %}
 			<h3>Recent Teams</h3>
 			{% for match in latest_match_list %}
-				<li>{{ match.team_number }}</li>
+				<li><a href = "/scout/team/{{ match.team_number }}/">{{ match.team_number }}</a></li>
 			{% endfor %}
 		{% else %}
 			<p>No matches yet</p>
 		{% endif %} 
+	
+                <form action="/scout/view_data/" method="post">
+
+                {% csrf_token %}
+                {% for field in form.visible_fields %}
+                        {{ field.errors }}
+                        {{ field.help_text }}<br />
+                        {{field }}<br />
+                {% endfor %}
+
+                <input type="submit" value="Submit" />
+
 	</body>
 </html>
