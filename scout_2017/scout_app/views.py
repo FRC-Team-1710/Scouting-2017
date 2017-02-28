@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.template import RequestContext, loader
 
-from scout_app.models import TeamData
+from scout_app.models import TeamData, AutoData, TeleopData
 from scout_app.forms import TeamInfoForm, AutoInfoForm, TeleopInfoForm
 
 def index(request):
@@ -51,6 +51,30 @@ def teleop_input(request):
 
 
 def view_data(request):
-	latest_match_list = TeamData.objects.order_by('team_number')[:2]
-	context = {'latest_match_list' : latest_match_list}
-	return render(request, 'scout_app/view_data.html', context)
+	latest_match_list = TeamData.objects.order_by('-match_number')[:6]
+	try:
+		context = {'latest_match_list' : latest_match_list, 'match_number' : latest_match_list[0].match_number}
+		return render(request, 'scout_app/view_data.html', context)
+	except(IndexError):
+                context = {'latest_match_list' : latest_match_list}
+                return render(request, 'scout_app/view_data.html', context)
+
+def team_lookup(request, team_number):
+	auto_data = AutoData.objects.order_by('match_number')
+	teleop_data = TeleopData.objects.order_by('match_number')
+	print auto_data
+	team_auto_data = []
+	team_teleop_data = []
+	for team in auto_data:
+		if team.team_number == int(team_number):
+			team_auto_data.append(team)
+
+	for team in teleop_data:
+		if team.team_number == int(team_number):
+			team_teleop_data.append(team)
+	context = {'team_number' : team_number, 'team_auto_data' : team_auto_data, 'team_teleop_data' : team_teleop_data}
+	return render(request, 'scout_app/team_results.html', context)
+
+def match_lookup(request, match_number):
+	context = {'match_number' : match_number}
+	return render(request, 'scout_app/match_results.html', context)

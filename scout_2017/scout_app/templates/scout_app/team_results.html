@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+
+<html>
+	<body>
+		<h1> Results for {{ team_number }} </h1>
+		{% if team_auto_data %}
+			{% for team in team_auto_data %}
+				<li><h4>Crossed baseline: {{ team.baseline_crossed }}</h4></li>
+			{% endfor %}
+			
+			{% for team in team_teleop_data %}
+				<li><h4>{{ team.gears_placed }}</h4></li>
+			{% endfor %}
+		{% else %}
+			<p>No data for this team</p>
+		{% endif %}	
+	</body>
+
+</html>
