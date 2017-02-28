@@ -15,10 +15,9 @@ class AutoData(models.Model):
 	team_number = models.PositiveIntegerField(default = 0)
 	baseline_crossed = models.BooleanField(default=False)
 	gears_placed = models.PositiveIntegerField(default = 0)
-	auto_fuel_accuracy = models.PositiveIntegerField(default = 0)
-	auto_fuel_speed = models.PositiveIntegerField(default = 0)
-	hopper_efficiency = models.PositiveIntegerField(default = 0)
-	test_choice = models.IntegerField(choices=QUALITY_CHOICES, default = 1)
+	auto_fuel_accuracy = models.IntegerField(choices=ACCURACY_CHOICES, default = 0)
+	auto_fuel_speed = models.IntegerField(choices=SPEED_CHOICES, default = 0)
+	hopper_efficiency = models.IntegerField(choices=HOPPER_EFFICIENCY, default = 0)
 
 class TeleopData(models.Model):
 	match_number = models.PositiveIntegerField(default = 0)

@@ -8,7 +8,6 @@
 
                 {% csrf_token %}
                 {% for field in form.visible_fields %}
-                        {{ field.errors }}
                         {{ field.help_text }}<br />
                         {{field }}<br />
                 {% endfor %}
