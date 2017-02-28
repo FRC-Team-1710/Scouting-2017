@@ -12,11 +12,19 @@
 				<tr>
 				    <th>Match Number</th>
                                     <th>Baseline Cross</th>
+				    <th>Gears Placed</th>
+				    <th>Shooter Accuracy</th>
+				    <th>Shooter Speed</th>
+				    <th>Hopper Cleanup</th>
 				</tr>
 			{% for team in team_auto_data %}
 				<tr>
 				    <td>{{ team.match_number }}</td>
 				    <td>{{ team.baseline_crossed }}</td>
+				    <td>{{ team.auto_gears_placed }}</td>
+				    <td>{{ team.auto_fuel_accuracy }}</td>
+				    <td>{{ team.auto_fuel_speed }}</td>
+				    <td>{{ team.hopper_efficiency }}</td>
 				</tr>
 			{% endfor %}
 			</table>
@@ -26,11 +34,21 @@
 				<tr>
 				    <th>Match Number</th>
 				    <th>Gears Placed</th>
+				    <th>Shooter Accuracy</th>
+				    <th>Shooter Speed</th>
+				    <th>Robot Speed</th>
+				    <th>Pilot Performance</th>
+				    <th>Climber Performance</th>
 				</tr>
 			{% for team in team_teleop_data %}
 				<tr>
 				    <th>{{ team.match_number }}</th>
 				    <th>{{ team.gears_placed }}</th>
+				    <th>{{ team.teleop_fuel_accuracy }}</th>
+				    <th>{{ team.teleop_fuel_speed }}</th>
+				    <th>{{ team.robot_speed }}</th>
+				    <th>{{ team.pilot_rating }}</th>
+				    <th>{{ team.climber_success }}</th>
 				</tr>				
 			{% endfor %}
 			</table>

@@ -22,3 +22,33 @@ HOPPER_EFFICIENCY = (
                 (4, ("only dropped a few")),
                 (5, ("collected every single ball")))
 
+GEAR_COUNTER = (
+	       (0, ("none placed")),
+	       (1, ("1")),
+	       (2, ("2")),
+	       (3, ("3")),
+	       (4, ("4")),
+	       (5, ("5")),
+	       (6, ("6")),
+	       (7, ("7")))
+
+ROBOT_SPEED = (
+		(u'meh real slow', u'meh real slow'),
+		(u'about average', u'about average'),
+		(u'BOOLIN', u'BOOLIN'),
+	)
+		
+PILOT_RATING = (
+		(u'not present', u'not present'),
+		(u'dropped every gear', u'dropped every gear'),
+		(u'dropped 1-2 gears', u'dropped 1-2 gears'),
+		(u'no gears dropped', u'no gears dropped')
+	)
+
+CLIMBER_SUCCESS = (
+		(u'did not attempt', u'did not attempt'),
+		(u'did not press button', u'did not press button'),
+		(u'fell off rope', u'fell off rope'),
+		(u'rope snapped', u'rope snapped'),
+		(u'climbed successfully', u'climbed successfully')
+	)
