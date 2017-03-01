@@ -1,0 +1,19 @@
+                                                                                        
+<!DOCTYPE html>
+
+<html>
+        <body>
+                <h1>Place Bets</h1>
+
+                <form action="/scout/place_bets/" method="post">
+
+                {% csrf_token %}
+                {% for field in form.visible_fields %}
+                        {{ field.help_text }}<br />
+                        {{field }}<br />
+                {% endfor %}
+
+                <input type="submit" value="Place Bet" />
+        </body>
+</html>
+

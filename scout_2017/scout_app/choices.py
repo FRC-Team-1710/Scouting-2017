@@ -52,3 +52,8 @@ CLIMBER_SUCCESS = (
 		(u'rope snapped', u'rope snapped'),
 		(u'climbed successfully', u'climbed successfully')
 	)
+
+ALLIANCE_COLORS = (
+		(u'Blue Alliance', u'Blue Alliance'),
+		(u'Red Alliance', u'Red Alliance')
+	)

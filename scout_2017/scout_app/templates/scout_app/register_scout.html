@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+
+<html>
+	<body>
+		<h1>Register</h1>
+                <form action="/scout/register_scout/" method="post">
+
+                {% csrf_token %}
+                {% for field in form.visible_fields %}
+                        {{ field.help_text }}<br />
+                        {{field }}<br />
+                {% endfor %}
+
+                <input type="submit" value="Place Bet" />
+
+	</body>
+</html>

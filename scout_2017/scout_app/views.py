@@ -2,24 +2,68 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.template import RequestContext, loader
 
-from scout_app.models import TeamData, AutoData, TeleopData
-from scout_app.forms import TeamInfoForm, AutoInfoForm, TeleopInfoForm, TeamLookupForm
+from scout_app.models import TeamData, AutoData, TeleopData, BetHandler
+from scout_app.forms import TeamInfoForm, AutoInfoForm, TeleopInfoForm, TeamLookupForm, PlaceBetForm, ScoutRegister, ScoutLogin
+
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 
 def index(request):
 	return render(request, 'scout_app/index.html')
+
+def scout_register(request):
+	if request.method == 'POST':
+		form = ScoutRegister(request.POST)
+		if form.is_valid():
+			user = User.objects.create_user(form.cleaned_data['scout_name'], form.cleaned_data['scout_email'], form.cleaned_data['scout_password'])
+			user.save()
+			return index(request)
+		else:
+			print form.errors
+	else:
+		form = ScoutRegister()
+	return render(request, 'scout_app/register_scout.html', { 'form' : form})
+
+def scout_login(request):
+	if request.method == 'POST':
+		form = ScoutLogin(request.POST)
+		if form.is_valid():
+			user = authenticate(username=form.cleaned_data['user'], password=form.cleaned_data['password'])
+			if user is not None:
+				return index(request)
+			else:
+				return scout_login(request)
+		else:
+			print form.errors
+	else:
+		form = ScoutLogin()
+	return render(request, 'scout_app/scout_login.html', { 'form' : form })
 
 def scout_start(request):
 	if request.method == 'POST':
         	form = TeamInfoForm(request.POST)
         	if form.is_valid():
             		form.save()
-			return auto_input(request)
+			return place_bets(request)
         	else:
         	    print form.errors
     	else:
         	form = TeamInfoForm()
 
 	return render(request, 'scout_app/scout_start.html',{ 'form' : form})
+
+def place_bets(request):
+	if request.method == 'POST':
+		form = PlaceBetForm(request.POST)
+		if form.is_valid():
+			form.save()
+			return auto_input(request)
+		else:
+			print form.errors
+	else:
+		form = PlaceBetForm(initial={'match_number' : TeamInfoForm.cleaned_data['match_number']})
+	
+	return render(request, 'scout_app/place_bets.html', {'form' : form})
 
 def auto_input(request):
 	if request.method == 'POST':

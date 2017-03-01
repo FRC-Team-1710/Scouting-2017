@@ -4,11 +4,16 @@ from django.db import models
 
 from scout_app.choices import *
 
+
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 # Create your models here.
 
 class TeamData(models.Model):
 	match_number = models.PositiveIntegerField(default = 0)
 	team_number = models.PositiveIntegerField(default = 0000)
+	alliance_color = models.CharField(choices=ALLIANCE_COLORS, max_length=100, default=0)
 
 class AutoData(models.Model):
 	match_number = models.PositiveIntegerField(default = 0)
@@ -28,3 +33,22 @@ class TeleopData(models.Model):
 	robot_speed = models.CharField(choices=ROBOT_SPEED, max_length = 100, default = 0)
 	pilot_rating = models.CharField(choices=PILOT_RATING, max_length = 100, default = 0)
 	climber_success = models.CharField(choices=CLIMBER_SUCCESS, max_length = 100, default = 0)
+	winning_alliance = models.CharField(choices=ALLIANCE_COLORS, max_length = 100, default = 0)
+
+class Scout(models.Model):
+	user = models.OneToOneField(User, on_delete=models.CASCADE)
+	scout_scheckles = models.IntegerField(default = 100)
+	
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+	if created:
+        	Scout.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+	instance.profile.save()
+	
+class BetHandler(models.Model):
+	bet_alliance = models.CharField(default=0, max_length=100, choices=ALLIANCE_COLORS)
+	alliance_money = models.IntegerField(default = 0)
+	match_number = models.PositiveIntegerField(default = 0)
