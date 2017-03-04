@@ -36,19 +36,15 @@ class TeleopData(models.Model):
 	winning_alliance = models.CharField(choices=ALLIANCE_COLORS, max_length = 100, default = 0)
 
 class Scout(models.Model):
-	user = models.OneToOneField(User, on_delete=models.CASCADE)
-	scout_scheckles = models.IntegerField(default = 100)
-	
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-	if created:
-        	Scout.objects.create(user=instance)
-
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-	instance.profile.save()
-	
+	user = models.CharField(max_length = 100, default = 0)
+	scout_sheckles = models.IntegerField(default = 100)
+		
 class BetHandler(models.Model):
 	bet_alliance = models.CharField(default=0, max_length=100, choices=ALLIANCE_COLORS)
 	alliance_money = models.IntegerField(default = 0)
 	match_number = models.PositiveIntegerField(default = 0)
+
+class Bet(models.Model):
+	user = models.CharField(default=0, max_length=100)
+	match_number = models.IntegerField(default = 0)
+	alliance_bet_on = models.CharField(default=0, max_length=100)

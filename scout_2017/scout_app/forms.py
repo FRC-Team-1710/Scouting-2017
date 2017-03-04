@@ -52,11 +52,11 @@ class TeamLookupForm(forms.Form):
 class PlaceBetForm(forms.ModelForm):
 	bet_alliance = forms.CharField(help_text="What alliance are you wanting to bet on", widget=forms.Select(choices=ALLIANCE_COLORS), required = True)
 	alliance_money = forms.IntegerField(help_text="How much money are you willing to bet on this alliance", required = True)
-	match_number = forms.IntegerField(help_text="What Match number this be?", required = True)
+	match_number = forms.IntegerField(required = False)
 	
 	class Meta:
 		model = BetHandler
-		fields = '__all__'
+		fields = ['bet_alliance', 'alliance_money']
 
 class ScoutLogin(forms.Form):
 	username = forms.CharField(help_text="username", max_length=100, required = True)
