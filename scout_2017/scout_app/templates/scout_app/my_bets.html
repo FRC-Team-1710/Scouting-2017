@@ -3,10 +3,10 @@
 <html>
 
 	<body>
-		<h1>Bets</h1
-		<h4>Pending Bets</h4>
-		<h4>Won Bets</h4>
-		<h4>Lost Bets</h4>
+		<h1>Bets</h1>
+			{% for bet in bets %}
+				<a href = "/scout/bets/{{bet.match_number}}/">match {{ bet.match_number }} for the {{ bet.alliance_bet_on }}</a></br>
+			{% endfor %}
 	</body>
 
 </html>

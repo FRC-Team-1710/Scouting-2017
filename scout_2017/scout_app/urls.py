@@ -12,7 +12,8 @@ urlpatterns = [
     url(r'^register_scout/$', views.scout_register, name = 'register'),
     url(r'^view_data/$', views.view_data, name = 'view_data'),
     url(r'^team/(?P<team_number>[0-7000]+)/$', views.team_lookup, name = 'team_lookup'),
-    url(r'^match/(?P<match_number>[0-200]+)/$', views.match_lookup, name = 'match_lookup'),
+    url(r'^match/(?P<match_number>[0-999]+)/$', views.match_lookup, name = 'match_lookup'),
     url(r'^logout/$', views.logout, name = 'logout'),
-    url(r'^my_bets/$', views.my_bets, name = 'my_bets'),
+    url(r'^bets/$', views.my_bets, name = 'bets'),
+    url(r'^bets/(?P<match_number>[0-9999]+)/$', views.view_bet, name = 'view_bet'),
 ]

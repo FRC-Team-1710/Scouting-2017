@@ -14,6 +14,7 @@ class TeamData(models.Model):
 	match_number = models.PositiveIntegerField(default = 0)
 	team_number = models.PositiveIntegerField(default = 0000)
 	alliance_color = models.CharField(choices=ALLIANCE_COLORS, max_length=100, default=0)
+	current_scout = models.CharField(max_length=100, default = 0)
 
 class AutoData(models.Model):
 	match_number = models.PositiveIntegerField(default = 0)
@@ -38,13 +39,15 @@ class TeleopData(models.Model):
 class Scout(models.Model):
 	user = models.CharField(max_length = 100, default = 0)
 	scout_sheckles = models.IntegerField(default = 100)
-		
+
 class BetHandler(models.Model):
-	bet_alliance = models.CharField(default=0, max_length=100, choices=ALLIANCE_COLORS)
-	alliance_money = models.IntegerField(default = 0)
+	money_in_pot = models.IntegerField(default = 0)
 	match_number = models.PositiveIntegerField(default = 0)
+	winning_alliance = models.CharField(default=0, max_length=100)
 
 class Bet(models.Model):
 	user = models.CharField(default=0, max_length=100)
 	match_number = models.IntegerField(default = 0)
 	alliance_bet_on = models.CharField(default=0, max_length=100)
+	money_bet = models.IntegerField(default = 0)
+	claimed = models.BooleanField(default=False)

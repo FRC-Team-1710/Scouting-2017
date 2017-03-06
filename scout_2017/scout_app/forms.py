@@ -6,23 +6,23 @@ from scout_app.choices import *
 class TeamInfoForm(forms.ModelForm):
 	match_number = forms.IntegerField(help_text="enter Match Number",required=True)
 	team_number = forms.IntegerField(help_text="enter team number",required=True)
-	
-	alliance_color = forms.CharField(help_text="what alliance are they on", widget=forms.Select(choices=ALLIANCE_COLORS), required=True)	
+
+	alliance_color = forms.CharField(help_text="what alliance are they on", widget=forms.Select(choices=ALLIANCE_COLORS), required=True)
 
 	class Meta:
 		model = TeamData
-		fields = '__all__'
+		fields = ['match_number', 'team_number', 'alliance_color']
 
 class AutoInfoForm(forms.ModelForm):
         match_number = forms.IntegerField(help_text="enter Match Number",required=True)
         team_number = forms.IntegerField(help_text="enter team number",required=True)
-	
+
 	baseline_crossed = forms.BooleanField(help_text="did your team cross the baseline?", required = False)
 	auto_gears_placed = forms.IntegerField(help_text="how many gears were placed by your team in auto", widget=forms.Select(choices=GEAR_COUNTER), required = True)
 	auto_fuel_accuracy = forms.IntegerField(help_text="How accurate is their shooter in auto?", widget=forms.Select(choices=ACCURACY_CHOICES), required = False)
 	auto_fuel_speed = forms.IntegerField(help_text="How fast did your team shoot in auto", widget=forms.Select(choices=SPEED_CHOICES), required = False)
 	hopper_efficiency = forms.IntegerField(help_text="How well were they able to retrieve hopper balls?", widget=forms.Select(choices=HOPPER_EFFICIENCY), required = False)
-	
+
 
         class Meta:
                 model = AutoData

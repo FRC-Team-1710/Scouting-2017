@@ -1,17 +1,16 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext, loader
-
+from django.contrib.auth.decorators import login_required
 from scout_app.models import TeamData, AutoData, TeleopData, BetHandler, Scout, Bet
 from scout_app.forms import forms, TeamInfoForm, AutoInfoForm, TeleopInfoForm, TeamLookupForm, PlaceBetForm, ScoutRegister, ScoutLogin
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
-
-import variables_n_shit as var
+import matplotlib.pyplot as plt
 
 def index(request):
-	context = {} 
+	context = {}
 	print type(request.user.username)
 	if request.user.username:
 		scouts = Scout.objects.order_by('scout_sheckles')
@@ -35,6 +34,9 @@ def scout_register(request):
 			new_scout = Scout(user = form.cleaned_data['scout_name'], scout_sheckles = 100)
 			new_scout.save()
 			user = authenticate(username=form.cleaned_data['scout_name'], password=form.cleaned_data['scout_password'])
+			if user is not None:
+				login(request, user)
+				return HttpResponseRedirect('/scout/')
 			return index(request)
 		else:
 			print form.errors
@@ -51,20 +53,20 @@ def scout_login(request):
 				login(request, user)
 				return HttpResponseRedirect('/scout/')
 			else:
-				return scout_login(request)
+				return HttpResponse("login failed")
 		else:
 			print form.errors
 	else:
 		form = ScoutLogin()
 	return render(request, 'scout_app/scout_login.html', { 'form' : form })
 
+@login_required
 def scout_start(request):
 	if request.method == 'POST':
         	form = TeamInfoForm(request.POST)
         	if form.is_valid():
-            		form.save()
-			var.current_match = form.cleaned_data['match_number']
-			var.current_team = form.cleaned_data['team_number']
+			new_team = TeamData(match_number = form.cleaned_data['match_number'], team_number = form.cleaned_data['team_number'], alliance_color = form.cleaned_data['alliance_color'], current_scout=request.user.username)
+			new_team.save()
 			return place_bets(request)
         	else:
         	    print form.errors
@@ -72,24 +74,47 @@ def scout_start(request):
         	form = TeamInfoForm()
 
 	return render(request, 'scout_app/scout_start.html',{ 'form' : form})
-
+@login_required
 def place_bets(request):
 	if request.method == 'POST':
 		form = PlaceBetForm(request.POST)
         	form.fields['match_number'].widget = forms.HiddenInput()
+		matches = TeamData.objects.order_by('-match_number')
+		match_num = 0
 		if form.is_valid():
-			new_bet = Bet(user = str(request.user.username), match_number=var.current_match, alliance_bet_on=form.cleaned_data['bet_alliance'])
-			form.save()
-			new_bet.save()
-			return auto_input(request)
+			current_scout = None
+			scouts = Scout.objects.order_by('user')
+			for scout in scouts:
+				if scout.user == request.user.username:
+					current_scout = scout
+
+			if int(form.cleaned_data['alliance_money']) > 0 and current_scout.scout_sheckles >= int(form.cleaned_data['alliance_money']):
+				for match in matches:
+					if str(match.current_scout) == str(request.user.username):
+						match_num = match.match_number
+				new_bet = Bet(user = str(request.user.username), match_number=match_num, alliance_bet_on=form.cleaned_data['bet_alliance'], money_bet=form.cleaned_data['alliance_money'])
+	                        new_bet.save()
+				new_balance = current_scout.scout_sheckles - int(form.cleaned_data['alliance_money'])
+        	                current_scout.scout_sheckles = new_balance
+				current_scout.save()
+	                        form.save()
+				return auto_input(request)
+			elif int(form.cleaned_data['alliance_money']) <= 0:
+				return auto_input(request)
+			else:
+				HttpResponseRedirect('/scout/place_bets/')
 		else:
 			print form.errors
 	else:
 		form = PlaceBetForm()
 		form.fields['match_number'].widget = forms.HiddenInput()
 	return render(request, 'scout_app/place_bets.html', {'form' : form})
-
+@login_required
 def auto_input(request):
+	matches = TeamData.objects.order_by('-match_number')
+	match_num = 0
+	team_num = 0
+
 	if request.method == 'POST':
 		form = AutoInfoForm(request.POST)
 		if form.is_valid():
@@ -100,12 +125,21 @@ def auto_input(request):
 	else:
 		print "meme"
 
-	form = AutoInfoForm(initial={'team_number' : var.current_team,
-				     'match_number' : var.current_match})
+        for match in matches:
+	        if str(match.current_scout) == str(request.user.username):
+        	        match_num = match.match_number
+			team_num = match.team_number
+
+	form = AutoInfoForm(initial={'team_number' : team_num,
+				     'match_number' : match_num})
 
 	return render(request, 'scout_app/scout_auto.html', {'form' : form})
-
+@login_required
 def teleop_input(request):
+        matches = TeamData.objects.order_by('-match_number')
+        match_num = 0
+        team_num = 0
+
         if request.method == 'POST':
                 form = TeleopInfoForm(request.POST)
                 if form.is_valid():
@@ -114,11 +148,14 @@ def teleop_input(request):
                 else:
                         print form.errors
         else:
-                form = TeleopInfoForm(initial={'team_number' : var.current_team, 
-                                             'match_number' : var.current_match})
+	        if str(match.current_scout) == str(request.user.username):
+                        match_num = match.match_number
+                        team_num = match.team_number
+
+                form = TeleopInfoForm(initial={'team_number' : team_num, 
+                                             'match_number' : match_num})
 
         return render(request, 'scout_app/scout_teleop.html', {'form' : form})
-
 
 def view_data(request):
 	latest_match_list = TeamData.objects.order_by('-match_number')[:6]
@@ -144,12 +181,25 @@ def team_lookup(request, team_number):
 	teleop_data = TeleopData.objects.order_by('match_number')
 	team_auto_data = []
 	team_teleop_data = []
+	teleop_gears_placed =[]
+	xAxis = []
+	#raw data in tables
 	for team in auto_data:
 		if team.team_number == int(team_number):
 			team_auto_data.append(team)
 	for team in teleop_data:
 		if team.team_number == int(team_number):
 			team_teleop_data.append(team)
+			teleop_gears_placed.append(team.gears_placed)
+
+	for team in team_teleop_data:
+		if str(team.team_number) == str(team_number):
+			xAxis.append(team.match_number)
+
+	plt.plot(xAxis, teleop_gears_placed)
+	plt.ylabel("gears placed")
+	plt.xlabel("match number")
+	plt.savefig('/home/herm/Scouting-2017/scout_2017/scout_app/static/' + str(team_number) + '-gear-plot.png')
 	context = {'team_number' : team_number, 'team_auto_data' : team_auto_data, 'team_teleop_data' : team_teleop_data}
 	return render(request, 'scout_app/team_results.html', context)
 
@@ -160,13 +210,95 @@ def match_lookup(request, match_number):
 def logout(request):
 	django_logout(request)
 	return HttpResponseRedirect('/scout/')
-
+@login_required
 def my_bets(request):
 	bets = Bet.objects.order_by('user')
-	current_scout_bets = None
+	current_scout_bets = []
 	context = {}
 	for bet in bets:
 		if bet.user == request.user.username:
 			current_scout_bets.append(bet)
-			context 
+			context = {'bets' : current_scout_bets} 
 	return render(request, 'scout_app/my_bets.html', context)
+@login_required
+def view_bet(request, match_number):
+	bets = Bet.objects.order_by('match_number')
+	matches = TeleopData.objects.order_by('match_number')
+	scouts = Scout.objects.order_by('user')
+	current_bet = None
+	blue_win_count = 0
+	red_win_count = 0
+	current_scout = None
+	scout_choice = ""
+	money_in_pot = 0
+	winning_alliance = None
+	bet_count = 0
+	red_bet_count = 0
+	blue_bet_count = 0
+	percent_of_pot = 0.0
+	context = {}
+	#calculate the money in the pot for that match
+	for bet in bets:
+		if str(bet.match_number) == match_number:
+			money_in_pot += bet.money_bet
+			bet_count += 1
+			print "money bet" + str(money_in_pot)
+			#finds the amount of people who bet on each alliance
+			if str(bet.alliance_bet_on) == "Blue Alliance":
+				blue_bet_count += 1
+			else:
+				red_bet_count += 1
+	#finds current Bet instance
+	for bet in bets:
+		if str(bet.match_number) == match_number:
+			if str(bet.user) == str(request.user.username):
+				current_bet = bet
+
+	#finds the alliance the scout bet on
+	for scout in scouts:
+		if scout.user == request.user.username:
+			current_scout = scout
+			for bet in bets:
+				if str(bet.user) == str(current_scout.user) and str(bet.match_number) == str(match_number):
+					scout_choice = bet.alliance_bet_on
+	#finds the alliance that won
+	for match in matches:
+		if str(match.match_number) == str(match_number):
+			#checks all data from the match to weed out cheaters
+			if str(match.winning_alliance) == "Blue Alliance":
+				blue_win_count += 1
+			else:
+				red_win_count += 1
+
+	if blue_win_count > red_win_count:
+		winning_alliance = "Blue Alliance"
+	elif red_win_count > blue_win_count:
+		winning_alliance = "Red Alliance"
+	else:
+		winning_alliance = "tie"
+		#move pot money into the pot of the next match
+	winnings = 0
+	if str(scout_choice) == str(winning_alliance):
+		if scout_choice == "Blue Alliance":
+			pot_percent = 1/blue_bet_count
+			winnings = money_in_pot * pot_percent
+		else:
+                        pot_percent = 1/red_bet_count
+			winnings = money_in_pot * pot_percent
+
+		if current_bet.claimed == False:
+			current_bet.claimed = True
+			current_bet.save()
+			print current_bet.claimed
+			new_balance = current_scout.scout_sheckles + winnings
+			current_scout.scout_sheckles = new_balance
+			current_scout.save()
+			print "sheckles claimed"
+		else:
+			print "sheckles already claimed"
+
+		context = {'pot_money' : money_in_pot, 'alliance_bet_on' : str(scout_choice), 'winning_alliance' : str(winning_alliance), 'winnings' : winnings}
+	else:
+		context = {'pot_money' : money_in_pot, 'alliance_bet_on' : str(scout_choice), 'winnning_alliance' : str(winning_alliance)}
+
+	return render(request, 'scout_app/bet_viewer.html', context)

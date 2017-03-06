@@ -3,16 +3,19 @@
 <html>
 	<body>
 		<h1>Team 1710 Steamworks Scouting System</h1>
-		<a href = "/scout/scout_start/">Scout a Match</a>
-		<a href = "/scout/view_data/">View Data</a>
-		<a href = "/scout/register_scout/">Register</a>
-		<a href = "/scout/scout_login/">Login</a>
-		<a href = "/scout/logout/">Logout</a>
-		
 		{% if user != 42 %}
+                        <a href = "/scout/scout_start/">Scout a Match</a>
+                        <a href = "/scout/view_data/">View Data</a>
+                        <a href = "/scout/register_scout/">Register</a>
+                        <a href = "/scout/scout_login/">Login</a>
+                        <a href = "/scout/logout/">Logout</a>
+                        <a href = "/scout/bets/">My Bets</a>
 			<h4>Hey {{ user.username }} you have {{ scout.scout_sheckles }} Scout Sheckles</h4>
 		{% else %}
-			<h4>You are not logged in</h4>
+                        <a href = "/scout/view_data/">View Data</a>
+                        <a href = "/scout/register_scout/">Register</a>
+                        <a href = "/scout/scout_login/">Login</a>
+			<h4>You are not logged in. Please login/register if you want to actually do anything</h4>
 		{% endif %}	
 	</body>
 </html>

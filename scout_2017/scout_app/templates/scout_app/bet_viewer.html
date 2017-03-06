@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+
+<html>
+	<body>
+		<h1>Bet Overview</h1>
+		<h3>{{pot_money}} Scout Sheckles in the pot for this match</h3>
+		{% if alliance_bet_on == winning_alliance %}
+			<h5>You won {{winnings}} scout sheckles</h5>
+		{% else %}
+			<h5>You lost! Haha sucks to suck!</h5>
+		{% endif %}
+	</body>
+</html>
