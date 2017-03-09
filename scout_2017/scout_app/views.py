@@ -9,6 +9,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 import matplotlib.pyplot as plt
 
+team_num = 0
+match_num = 0
+
 def index(request):
 	context = {}
 	print type(request.user.username)
@@ -79,7 +82,7 @@ def place_bets(request):
 	if request.method == 'POST':
 		form = PlaceBetForm(request.POST)
         	form.fields['match_number'].widget = forms.HiddenInput()
-		matches = TeamData.objects.order_by('-match_number')
+		matches = TeamData.objects.order_by('match_number')
 		match_num = 0
 		if form.is_valid():
 			current_scout = None
@@ -111,9 +114,7 @@ def place_bets(request):
 	return render(request, 'scout_app/place_bets.html', {'form' : form})
 @login_required
 def auto_input(request):
-	matches = TeamData.objects.order_by('-match_number')
-	match_num = 0
-	team_num = 0
+	matches = TeamData.objects.order_by('match_number')
 
 	if request.method == 'POST':
 		form = AutoInfoForm(request.POST)
@@ -130,15 +131,16 @@ def auto_input(request):
         	        match_num = match.match_number
 			team_num = match.team_number
 
+	print "hey " + str(match_num)
 	form = AutoInfoForm(initial={'team_number' : team_num,
 				     'match_number' : match_num})
+#        form.fields['match_number'].widget = forms.HiddenInput()
+#        form.fields['team_number'].widget = forms.HiddenInput()
 
-	return render(request, 'scout_app/scout_auto.html', {'form' : form})
+	return render(request, 'scout_app/scout_auto.html', {'form' : form, 'team_number' : team_num, 'match_number' : match_num})
 @login_required
 def teleop_input(request):
-        matches = TeamData.objects.order_by('-match_number')
-        match_num = 0
-        team_num = 0
+        matches = TeamData.objects.order_by('match_number')
 
         if request.method == 'POST':
                 form = TeleopInfoForm(request.POST)
@@ -148,14 +150,21 @@ def teleop_input(request):
                 else:
                         print form.errors
         else:
+		print "killme"
+
+	for match in matches:
 	        if str(match.current_scout) == str(request.user.username):
                         match_num = match.match_number
                         team_num = match.team_number
 
-                form = TeleopInfoForm(initial={'team_number' : team_num, 
-                                             'match_number' : match_num})
+        form = TeleopInfoForm(initial={'team_number' : team_num, 
+                                        'match_number' : match_num})
 
-        return render(request, 'scout_app/scout_teleop.html', {'form' : form})
+#        form.fields['match_number'].widget = forms.HiddenInput()
+#        form.fields['team_number'].widget = forms.HiddenInput()
+
+        return render(request, 'scout_app/scout_teleop.html', {'form' : form, 'team_number' : team_num, 'match_number' : match_num})
+
 
 def view_data(request):
 	latest_match_list = TeamData.objects.order_by('-match_number')[:6]
@@ -216,7 +225,7 @@ def my_bets(request):
 	current_scout_bets = []
 	context = {}
 	for bet in bets:
-		if bet.user == request.user.username:
+		if bet.user == request.user.username and bet.claimed == False:
 			current_scout_bets.append(bet)
 			context = {'bets' : current_scout_bets} 
 	return render(request, 'scout_app/my_bets.html', context)

@@ -7,15 +7,15 @@ class TeamInfoForm(forms.ModelForm):
 	match_number = forms.IntegerField(help_text="enter Match Number",required=True)
 	team_number = forms.IntegerField(help_text="enter team number",required=True)
 
-	alliance_color = forms.CharField(help_text="what alliance are they on", widget=forms.Select(choices=ALLIANCE_COLORS), required=True)
+	alliance_color = forms.CharField(help_text="what alliance are they on", widget=forms.Select(choices=ALLIANCE_COLORS), required=False)
 
 	class Meta:
 		model = TeamData
 		fields = ['match_number', 'team_number', 'alliance_color']
 
 class AutoInfoForm(forms.ModelForm):
-        match_number = forms.IntegerField(help_text="enter Match Number",required=True)
-        team_number = forms.IntegerField(help_text="enter team number",required=True)
+        match_number = forms.IntegerField(help_text="enter Match Number",required=False)
+        team_number = forms.IntegerField(help_text="enter team number",required=False)
 
 	baseline_crossed = forms.BooleanField(help_text="did your team cross the baseline?", required = False)
 	auto_gears_placed = forms.IntegerField(help_text="how many gears were placed by your team in auto", widget=forms.Select(choices=GEAR_COUNTER), required = True)
@@ -29,8 +29,8 @@ class AutoInfoForm(forms.ModelForm):
                 fields = '__all__'
 
 class TeleopInfoForm(forms.ModelForm):
-	match_number = forms.IntegerField(help_text="enter match number", required = True)
-        team_number = forms.IntegerField(help_text="enter team number",required=True)
+	match_number = forms.IntegerField(help_text="enter match number", required = False)
+        team_number = forms.IntegerField(help_text="enter team number",required=False)
 
 	gears_placed = forms.IntegerField(help_text="how many gears did your team place?", widget=forms.Select(choices=GEAR_COUNTER), required = True)
 	teleop_fuel_accuracy = forms.IntegerField(help_text="How accurate is their shooter in teleop", widget=forms.Select(choices=ACCURACY_CHOICES), required = False)
