@@ -141,12 +141,19 @@ def auto_input(request):
 @login_required
 def teleop_input(request):
         matches = TeamData.objects.order_by('match_number')
-
+	scouts = Scout.objects
         if request.method == 'POST':
                 form = TeleopInfoForm(request.POST)
                 if form.is_valid():
                         form.save()
-                        return index(request)
+			#give scout 50 scheckles and add a match to their matches scouted count
+                        for scout in scouts:
+				if str(scout.user) == str(request.user.username):
+					scout.scout_sheckles + 50
+					scout.matches_scouted + 1
+					scout.save()
+
+			return HttpResponseRedirect('/scout/')
                 else:
                         print form.errors
         else:
@@ -228,6 +235,9 @@ def my_bets(request):
 		if bet.user == request.user.username and bet.claimed == False:
 			current_scout_bets.append(bet)
 			context = {'bets' : current_scout_bets} 
+		else:
+			context = {}
+
 	return render(request, 'scout_app/my_bets.html', context)
 @login_required
 def view_bet(request, match_number):
@@ -246,6 +256,10 @@ def view_bet(request, match_number):
 	blue_bet_count = 0
 	percent_of_pot = 0.0
 	context = {}
+	blue_money = 0
+	red_money = 0
+	percent_return = 0.0
+	winnings = 0
 	#calculate the money in the pot for that match
 	for bet in bets:
 		if str(bet.match_number) == match_number:
@@ -255,7 +269,7 @@ def view_bet(request, match_number):
 			#finds the amount of people who bet on each alliance
 			if str(bet.alliance_bet_on) == "Blue Alliance":
 				blue_bet_count += 1
-			else:
+			elif str(bet.alliance_bet_on) == "Red Alliance":
 				red_bet_count += 1
 	#finds current Bet instance
 	for bet in bets:
@@ -265,11 +279,30 @@ def view_bet(request, match_number):
 
 	#finds the alliance the scout bet on
 	for scout in scouts:
-		if scout.user == request.user.username:
+		if str(scout.user) == str(request.user.username):
 			current_scout = scout
 			for bet in bets:
 				if str(bet.user) == str(current_scout.user) and str(bet.match_number) == str(match_number):
 					scout_choice = bet.alliance_bet_on
+
+	#calculates money placed on each alliance
+	for bet in bets:
+		if str(bet.alliance_bet_on) == "Blue Alliance":
+			blue_money += bet.money_bet
+		elif str(bet.alliance_bet_on) == "Red Alliance":
+			red_money += bet.money_bet
+	#calculates return percent
+	for scout in scouts:
+                if str(scout.user) == str(request.user.username):
+                        current_scout = scout
+                        for bet in bets:
+                                if str(bet.user) == str(current_scout.user) and str(bet.match_number) == str(match_number):
+                                        if str(bet.alliance_bet_on) == "Blue Alliance":
+						percent_return = float(bet.money_bet)/float(blue_money)
+                				print "heyeyey" + str(blue_money)
+					elif str(bet.alliance_bet_on) == "Red Alliance":
+						percent_return = float(bet.money_bet)/float(red_money)
+						print "heyTYTT"
 	#finds the alliance that won
 	for match in matches:
 		if str(match.match_number) == str(match_number):
@@ -286,14 +319,9 @@ def view_bet(request, match_number):
 	else:
 		winning_alliance = "tie"
 		#move pot money into the pot of the next match
-	winnings = 0
 	if str(scout_choice) == str(winning_alliance):
-		if scout_choice == "Blue Alliance":
-			pot_percent = 1/blue_bet_count
-			winnings = money_in_pot * pot_percent
-		else:
-                        pot_percent = 1/red_bet_count
-			winnings = money_in_pot * pot_percent
+		print "percent return" + str(percent_return)
+		winnings = money_in_pot * percent_return
 
 		if current_bet.claimed == False:
 			current_bet.claimed = True

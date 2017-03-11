@@ -57,3 +57,10 @@ ALLIANCE_COLORS = (
 		(u'Blue Alliance', u'Blue Alliance'),
 		(u'Red Alliance', u'Red Alliance')
 	)
+
+WINNING_ALLIANCE = (
+                (u'PLEASE SELECT THE WINNER', u'PLEASE SELECT THE WINNER'),
+		(u'Blue Alliance', u'Blue Alliance'),
+                (u'Red Alliance', u'Red Alliance'),
+        )
+

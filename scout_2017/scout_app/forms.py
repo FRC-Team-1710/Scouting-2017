@@ -37,10 +37,8 @@ class TeleopInfoForm(forms.ModelForm):
 	teleop_fuel_speed = forms.IntegerField(help_text="How fast is their shooter in teleop", widget=forms.Select(choices=SPEED_CHOICES), required = False)
 	robot_speed = forms.CharField(help_text="How fast is their robot", widget=forms.Select(choices=ROBOT_SPEED), required = False)
 
-	pilot_rating = forms.CharField(help_text="How well did their pilot perform", widget=forms.Select(choices=PILOT_RATING), required = False)
 	climber_success = forms.CharField(help_text="Did their robot climb?", widget=forms.Select(choices=CLIMBER_SUCCESS), required = False)
-
-	winning_alliance = forms.CharField(help_text="What alliance won?", widget=forms.Select(choices=ALLIANCE_COLORS), required = True)	
+	winning_alliance = forms.CharField(help_text="What alliance won?", widget=forms.Select(choices=ALLIANCE_COLORS), required = True)
 
         class Meta:
                 model = TeleopData

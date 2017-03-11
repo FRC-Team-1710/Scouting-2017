@@ -32,13 +32,13 @@ class TeleopData(models.Model):
 	teleop_fuel_accuracy = models.IntegerField(choices=ACCURACY_CHOICES, default = 0)
 	teleop_fuel_speed = models.PositiveIntegerField(choices=SPEED_CHOICES, default = 0)
 	robot_speed = models.CharField(choices=ROBOT_SPEED, max_length = 100, default = 0)
-	pilot_rating = models.CharField(choices=PILOT_RATING, max_length = 100, default = 0)
 	climber_success = models.CharField(choices=CLIMBER_SUCCESS, max_length = 100, default = 0)
-	winning_alliance = models.CharField(choices=ALLIANCE_COLORS, max_length = 100, default = 0)
+	winning_alliance = models.CharField(choices=WINNING_ALLIANCE, max_length = 100, default = 0)
 
 class Scout(models.Model):
 	user = models.CharField(max_length = 100, default = 0)
 	scout_sheckles = models.IntegerField(default = 100)
+	matches_scouted = models.IntegerField(default = 0)
 
 class BetHandler(models.Model):
 	money_in_pot = models.IntegerField(default = 0)
