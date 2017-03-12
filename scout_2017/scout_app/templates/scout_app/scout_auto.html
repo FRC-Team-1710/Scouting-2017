@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 
 <html>
+<link type="text/css" rel="stylesheet" href="stylesheet.css" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
         <body>
                 <h1>Autonomous Info for team {{ team_number }} in match {{ match_number }}</h1>
 
@@ -11,8 +13,6 @@
                         {{ field.help_text }}<br />
                         {{field }}<br />
                 {% endfor %}
-
                 <input type="submit" value="Submit" />
         </body>
 </html>
-

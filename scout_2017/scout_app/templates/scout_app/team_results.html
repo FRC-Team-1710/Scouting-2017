@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 
 <html>
+<link type="text/css" rel="stylesheet" href="stylesheet.css" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	{% load static %}
 
 	<link rel="stylesheet" type="text/css" href="{% static 'scout_app/team_results_styles.css' %}" />
@@ -49,12 +51,12 @@
 				    <th>{{ team.robot_speed }}</th>
 				    <th>{{ team.pilot_rating }}</th>
 				    <th>{{ team.climber_success }}</th>
-				</tr>				
+				</tr>
 			{% endfor %}
 			</table>
 		{% else %}
 			<p>No data for this team</p>
-		{% endif %}	
+		{% endif %}
 		<img src="/static/{{ team_number }}-gear-plot.png"/>
 	</body>
 
