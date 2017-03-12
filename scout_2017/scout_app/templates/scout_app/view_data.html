@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 
 <html>
+<link type="text/css" rel="stylesheet" href="stylesheet.css" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<body>
 		<h1>Teams From Match {{ match_number }}</h1>
 		{% if latest_match_list %}
@@ -10,8 +12,8 @@
 			{% endfor %}
 		{% else %}
 			<p>No matches yet</p>
-		{% endif %} 
-	
+		{% endif %}
+
                 <form action="/scout/view_data/" method="post">
 
                 {% csrf_token %}

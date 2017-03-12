@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 
 <html>
-
+<link type="text/css" rel="stylesheet" href="stylesheet.css" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<body>
 		<h1>Bets</h1>
 			{% for bet in bets %}
-				<a href = "/scout/bets/{{bet.match_number}}/">match {{ bet.match_number }} for the {{ bet.alliance_bet_on }}</a></br>
+				<div class="links">
+					<a href = "/scout/bets/{{bet.match_number}}/">match {{ bet.match_number }} for the {{ bet.alliance_bet_on }}</a>
+				</div>
+				</br>
 			{% endfor %}
 	</body>
 
