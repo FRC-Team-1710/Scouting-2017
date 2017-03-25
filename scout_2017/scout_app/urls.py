@@ -18,4 +18,5 @@ urlpatterns = [
     url(r'^bets/(?P<match_number>[0-9999]+)/$', views.view_bet, name = 'view_bet'),
     url(r'^thanks/$', views.thanks, name="thanks"),
     url(r'^filter_data/$', views.filter_data, name='filter_data'),
+    url(r'^thanks_export/$', views.export_raw, name='export_raw'),
 ]

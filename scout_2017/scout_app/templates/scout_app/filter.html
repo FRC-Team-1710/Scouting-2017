@@ -23,7 +23,7 @@
 		{%if climb_data %}
 			<h1>Team, Climb %</h1>
 			{%for climb in climb_data %}
-				<h4>{{climb}}</h4>
+				<a href="/scout/team/{{climb.0}}/">{{climb.0}} at {{climb.1}}%</a>
 			{%endfor%}
 		{%endif%}
 	</body>

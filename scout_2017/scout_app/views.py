@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext, loader
 from django.contrib.auth.decorators import login_required
-from scout_app.models import TeamData, AutoData, TeleopData, BetHandler, Scout, Bet, OtherData, Comments
+from scout_app.models import TeamData, AutoData, TeleopData, BetHandler, Scout, Bet, OtherData, Comments, Teams
 from scout_app.forms import forms, TeamInfoForm, AutoInfoForm, TeleopInfoForm, TeamLookupForm, PlaceBetForm, ScoutRegister, ScoutLogin, TeamFilterForm, CommentForm
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.models import User
@@ -67,7 +67,9 @@ def scout_start(request):
 	errors = None
 	scouts = Scout.objects.order_by('user')
 	matches = TeamData.objects.order_by('-match_number')
+	teams = Teams.objects.order_by('team_number')
 	match_played = False
+	team_exists = False
 	match_count = 0
 
 	if request.method == 'POST':
@@ -80,10 +82,15 @@ def scout_start(request):
 					if match_count >= 6:
 						errors = "Match Already Played"
 						match_played = True
-			if match_played == False:
+			for team in teams:
+				if str(form.cleaned_data['team_number']) == str(team.team_number):
+					team_exists = True
+			if match_played == False and team_exists == True:
 				new_team = TeamData(match_number = form.cleaned_data['match_number'], team_number = form.cleaned_data['team_number'], alliance_color = form.cleaned_data['alliance_color'], current_scout=request.user.username)
 				new_team.save()
 				return HttpResponseRedirect('/scout/place_bets/')
+			else:
+				errors = "That team is not competing here"
         	else:
         	    print form.errors
     	else:
@@ -238,7 +245,7 @@ def filter_data(request):
 		form = TeamFilterForm(request.POST)
 		if form.is_valid():
 			print form.cleaned_data['filter_type']
-			if form.cleaned_data['filter_type'] == u"most gears in teleop":
+ 			if form.cleaned_data['filter_type'] == u"most gears in teleop":
 				matches = TeleopData.objects.order_by('-gears_placed')
 				context = {'gears' : matches}
 				return render(request, 'scout_app/filter.html', context)
@@ -290,7 +297,7 @@ def filter_data(request):
 						if count != 0:
 							climb_data.append([team_num, (float(success)/float(count)) * 100])
                                         previous_team = team_num
-                                context = {'climb_data': climb_data}
+                                context = {'climb_data': sorted(climb_data, key = lambda x : x[1], reverse=True)}
                                 return render(request, 'scout_app/filter.html', context)
 		else:
 			print form.errors
@@ -351,6 +358,25 @@ def team_lookup(request, team_number):
 	new_other = OtherData(team_number=team_number, climb_percentage = climb_p, gear_average = gear_average)
 	context = {'team_number' : team_number, 'team_auto_data' : team_auto_data, 'team_teleop_data' : team_teleop_data, 'gear_average' : gear_average, 'climber_success': climb_p, 'form' : form, 'comments' : comments_for_team}
 	return render(request, 'scout_app/team_results.html', context)
+
+def export_raw(request):
+	import csv
+	teleop_data = TeleopData.objects.order_by('match_number')
+	context = None
+
+	response = HttpResponse(content_type='text/csv')
+
+        response['Content-Disposition'] = 'attachment; filename="kc_raw.csv"'
+
+	with open('kc_raw.csv', 'wb') as csvfile:
+		raw_data = csv.writer(response)
+		raw_data.writerow(['Match Number', 'Team Number', 'Gears Placed', 'Fuel Scored', 'Climber Success'])
+		for match in teleop_data:
+			if int(match.match_number) > 6:
+				match_row = [str(match.match_number), str(match.team_number), str(match.gears_placed), str(match.teleop_fuel_accuracy), str(match.climber_success)]
+				raw_data.writerow(match_row)
+
+	return response
 
 def match_lookup(request, match_number):
 	#scrapes north star schedule for match schedule

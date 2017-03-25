@@ -12,7 +12,6 @@ from django.dispatch import receiver
 
 class Teams(models.Model):
 	team_number = models.IntegerField(default=0)
-	climb_percentage = models.DecimalField(default=0, max_digits=5, decimal_places=2)
 
 class TeamData(models.Model):
 	match_number = models.PositiveIntegerField(default = 0)
