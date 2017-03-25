@@ -8,6 +8,8 @@ from django.contrib.auth import logout as django_logout
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 import matplotlib.pyplot as plt
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 def index(request):
 	context = {}
@@ -65,19 +67,30 @@ def scout_start(request):
 	errors = None
 	scouts = Scout.objects.order_by('user')
 	matches = TeamData.objects.order_by('-match_number')
+	match_played = False
+	match_count = 0
 
 	if request.method == 'POST':
         	form = TeamInfoForm(request.POST)
         	if form.is_valid():
-			new_team = TeamData(match_number = form.cleaned_data['match_number'], team_number = form.cleaned_data['team_number'], alliance_color = form.cleaned_data['alliance_color'], current_scout=request.user.username)
-			new_team.save()
-			return place_bets(request)
+			for match in matches:
+				if str(match.match_number) == str(form.cleaned_data['match_number']):
+					match_count += 1
+					print "sweet yeet " + str(match_count) 
+					if match_count >= 6:
+						errors = "Match Already Played"
+						match_played = True
+			if match_played == False:
+				new_team = TeamData(match_number = form.cleaned_data['match_number'], team_number = form.cleaned_data['team_number'], alliance_color = form.cleaned_data['alliance_color'], current_scout=request.user.username)
+				new_team.save()
+				return HttpResponseRedirect('/scout/place_bets/')
         	else:
         	    print form.errors
     	else:
         	form = TeamInfoForm()
 
 	return render(request, 'scout_app/scout_start.html',{ 'form' : form, 'errors' : errors})
+
 @login_required
 def place_bets(request):
 	if request.method == 'POST':
@@ -340,7 +353,23 @@ def team_lookup(request, team_number):
 	return render(request, 'scout_app/team_results.html', context)
 
 def match_lookup(request, match_number):
-	context = {'match_number' : match_number}
+	#scrapes north star schedule for match schedule
+	scope = ['https://spreadsheets.google.com/feeds']
+	row_num = 0
+	credentials = ServiceAccountCredentials.from_json_keyfile_name('/home/herm/Scouting-1df27c55e93e.json', scope)
+
+	gc = gspread.authorize(credentials)
+
+	wks = gc.open('North Star Match Schedule').sheet1
+
+	matches = wks.col_values(1)
+	print matches
+	for match in matches:
+		row_num += 1
+		if str(match) == 'Quals ' + str(match_number):
+			teams_in_match = wks.row_values(row_num)
+
+	context = {'match_number' : match_number, 'blue_teams' : teams_in_match[1:6], 'red_teams' : teams_in_match[7:12]}
 	return render(request, 'scout_app/match_results.html', context)
 
 def logout(request):

@@ -5,12 +5,13 @@ TEAM_FILTER_CHOICES = (
 		)
 
 ACCURACY_CHOICES = (
-		(0, ("did not attempt")),
-		(1, ("poor accuracy")),
-		(2, ("A few went in")),
-		(3, ("Half went in")),
-		(4, ("over half went in")),
-		(5, ("100% accuracy")))
+		(0, ("unfilled")),
+		(1, ("did not attempt")),
+		(2, ("poor accuracy")),
+		(3, ("A few went in")),
+		(4, ("Half went in")),
+		(5, ("over half went in")),
+		(6, ("100% accuracy")))
 
 SPEED_CHOICES = (
                 (u'did not attempt', u"did not attempt"),
@@ -27,6 +28,13 @@ HOPPER_EFFICIENCY = (
                 (u"over ten balls caught", u"over ten balls caught"),
                 (u"only dropped a few", u"only dropped a few"),
                 (u"collected every ball", u"collected every single ball"))
+
+GEAR_POSITION = (
+		(u"unfilled", u"unfilled"),
+		(u"did not attempt", u"did not attempt"),
+		(u"left peg", u"left peg"),
+		(u"center peg", u"center peg"),
+		(u"right peg", u"right peg"))
 
 GEAR_COUNTER = (
 	       (0, ("none placed")),
@@ -56,6 +64,7 @@ PILOT_RATING = (
 	)
 
 CLIMBER_SUCCESS = (
+		(u'unfilled', u'unfilled'),
 		(u'did not attempt', u'did not attempt'),
 		(u'did not press button', u'did not press button'),
 		(u'fell off rope', u'fell off rope'),
