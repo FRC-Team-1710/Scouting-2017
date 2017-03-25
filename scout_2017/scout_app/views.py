@@ -2,15 +2,12 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext, loader
 from django.contrib.auth.decorators import login_required
-from scout_app.models import TeamData, AutoData, TeleopData, BetHandler, Scout, Bet
-from scout_app.forms import forms, TeamInfoForm, AutoInfoForm, TeleopInfoForm, TeamLookupForm, PlaceBetForm, ScoutRegister, ScoutLogin
+from scout_app.models import TeamData, AutoData, TeleopData, BetHandler, Scout, Bet, OtherData, Comments
+from scout_app.forms import forms, TeamInfoForm, AutoInfoForm, TeleopInfoForm, TeamLookupForm, PlaceBetForm, ScoutRegister, ScoutLogin, TeamFilterForm, CommentForm
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 import matplotlib.pyplot as plt
-
-team_num = 0
-match_num = 0
 
 def index(request):
 	context = {}
@@ -65,6 +62,10 @@ def scout_login(request):
 
 @login_required
 def scout_start(request):
+	errors = None
+	scouts = Scout.objects.order_by('user')
+	matches = TeamData.objects.order_by('-match_number')
+
 	if request.method == 'POST':
         	form = TeamInfoForm(request.POST)
         	if form.is_valid():
@@ -76,14 +77,21 @@ def scout_start(request):
     	else:
         	form = TeamInfoForm()
 
-	return render(request, 'scout_app/scout_start.html',{ 'form' : form})
+	return render(request, 'scout_app/scout_start.html',{ 'form' : form, 'errors' : errors})
 @login_required
 def place_bets(request):
 	if request.method == 'POST':
 		form = PlaceBetForm(request.POST)
         	form.fields['match_number'].widget = forms.HiddenInput()
 		matches = TeamData.objects.order_by('match_number')
+       		#finds match number
+		team_num = 0
 		match_num = 0
+        	for match in matches:
+                	if str(match.current_scout) == str(request.user.username):
+                        	match_num = match.match_number
+				team_num = match.team_number
+
 		if form.is_valid():
 			current_scout = None
 			scouts = Scout.objects.order_by('user')
@@ -92,9 +100,6 @@ def place_bets(request):
 					current_scout = scout
 
 			if int(form.cleaned_data['alliance_money']) > 0 and current_scout.scout_sheckles >= int(form.cleaned_data['alliance_money']):
-				for match in matches:
-					if str(match.current_scout) == str(request.user.username):
-						match_num = match.match_number
 				new_bet = Bet(user = str(request.user.username), match_number=match_num, alliance_bet_on=form.cleaned_data['bet_alliance'], money_bet=form.cleaned_data['alliance_money'])
 	                        new_bet.save()
 				new_balance = current_scout.scout_sheckles - int(form.cleaned_data['alliance_money'])
@@ -115,6 +120,13 @@ def place_bets(request):
 @login_required
 def auto_input(request):
 	matches = TeamData.objects.order_by('match_number')
+	scouts = Scout.objects.order_by('user')
+        team_num = 0
+        match_num = 0
+        for match in matches:
+        	if str(match.current_scout) == str(request.user.username):
+        		match_num = match.match_number
+        		team_num = match.team_number
 
 	if request.method == 'POST':
 		form = AutoInfoForm(request.POST)
@@ -126,14 +138,9 @@ def auto_input(request):
 	else:
 		print "meme"
 
-        for match in matches:
-	        if str(match.current_scout) == str(request.user.username):
-        	        match_num = match.match_number
-			team_num = match.team_number
-
 	print "hey " + str(match_num)
 	form = AutoInfoForm(initial={'team_number' : team_num,
-				     'match_number' : match_num})
+				     'match_number' : match_num, "auto_fuel_accuracy" : 0})
 #        form.fields['match_number'].widget = forms.HiddenInput()
 #        form.fields['team_number'].widget = forms.HiddenInput()
 
@@ -141,38 +148,58 @@ def auto_input(request):
 @login_required
 def teleop_input(request):
         matches = TeamData.objects.order_by('match_number')
-	scouts = Scout.objects
-        if request.method == 'POST':
+	scouts = Scout.objects.order_by('user')
+        team_num = 0
+        match_num = 0
+        for match in matches:
+        	if str(match.current_scout) == str(request.user.username):
+        		match_num = match.match_number
+        		team_num = match.team_number
+
+
+	if request.method == 'POST':
                 form = TeleopInfoForm(request.POST)
                 if form.is_valid():
                         form.save()
 			#give scout 50 scheckles and add a match to their matches scouted count
                         for scout in scouts:
 				if str(scout.user) == str(request.user.username):
-					scout.scout_sheckles + 50
-					scout.matches_scouted + 1
+					new_balance = scout.scout_sheckles + 50
+					scout.scout_sheckles = new_balance
+					updated_matches_scouted = scout.matches_scouted + 1
+					scout.matches_scouted = updated_matches_scouted
 					scout.save()
 
-			return HttpResponseRedirect('/scout/')
+			return HttpResponseRedirect('/scout/thanks')
                 else:
                         print form.errors
         else:
 		print "killme"
 
-	for match in matches:
-	        if str(match.current_scout) == str(request.user.username):
-                        match_num = match.match_number
-                        team_num = match.team_number
-
-        form = TeleopInfoForm(initial={'team_number' : team_num, 
-                                        'match_number' : match_num})
+        form = TeleopInfoForm(initial={'team_number' : team_num,
+                                        'match_number' : match_num, "teleop_fuel_accuracy" : 0})
 
 #        form.fields['match_number'].widget = forms.HiddenInput()
 #        form.fields['team_number'].widget = forms.HiddenInput()
 
         return render(request, 'scout_app/scout_teleop.html', {'form' : form, 'team_number' : team_num, 'match_number' : match_num})
+def thanks(request):
+	scouts = Scout.objects.order_by('user')
+	matches = TeamData.objects.order_by('match_number')
+	matches_scouted = 0
+	return_home = "go back home"
+	motivation = "Check the status of your bet"
+	match_num = 0
+	team_num = 0
+        for match in matches:
+                if str(match.current_scout) == str(request.user.username):
+                        match_num = match.match_number
+                        team_num = match.team_number
 
-
+	for scout in scouts:
+		if str(scout.user) == str(request.user):
+			matches_scouted = int(scout.matches_scouted)
+	return render(request, 'scout_app/thanks.html', {"matches_scouted" : matches_scouted, "motivation" : motivation, "return_home" : return_home, 'match_number' : match_num})
 def view_data(request):
 	latest_match_list = TeamData.objects.order_by('-match_number')[:6]
 
@@ -184,21 +211,92 @@ def view_data(request):
 			print form.errors
 	else:
 		 form = TeamLookupForm()
-
 	try:
-		context = {'latest_match_list' : latest_match_list, 'match_number' : latest_match_list[0].match_number, 'form' : form}
+		context = {'latest_match_list' : latest_match_list, 'match_number' : latest_match_list[0].match_number, 'form' : form, "id" : 1}
 		return render(request, 'scout_app/view_data.html', context)
 	except(IndexError):
-                context = {'latest_match_list' : latest_match_list}
+                context = {'latest_match_list' : latest_match_list, "id" : 1}
                 return render(request, 'scout_app/view_data.html', context)
+
+def filter_data(request):
+	matches  = TeleopData.objects.order_by('match_number')
+	context = {}
+	if request.method == 'POST':
+		form = TeamFilterForm(request.POST)
+		if form.is_valid():
+			print form.cleaned_data['filter_type']
+			if form.cleaned_data['filter_type'] == u"most gears in teleop":
+				matches = TeleopData.objects.order_by('-gears_placed')
+				context = {'gears' : matches}
+				return render(request, 'scout_app/filter.html', context)
+			elif form.cleaned_data['filter_type'] == u"perfect climbers":
+				teams = []
+				perfect_climbing = []
+				teams_ = TeamData.objects.order_by('team_number')
+				team_num = 0
+				previous_team = 0
+				for team in teams_:
+					team_num = team.team_number
+					if team_num != previous_team:
+						#calculate climbing percentage
+						count = 0
+						success = 0
+						for match in matches:
+							if str(match.team_number) == str(team_num):
+								if match.climber_success == u"climbed successfully":
+									success += 1
+								count += 1
+						#print (float(success)/float(count)) * 100
+						print count
+						if count != 0 and (float(success)/float(count)) * 100 >= 100:
+							perfect_climbing.append(str(team_num))
+							print "hey"
+					previous_team = team_num
+				print perfect_climbing
+				context = {'perfect_teams' : perfect_climbing}
+				return render(request, 'scout_app/filter.html', context)
+			elif form.cleaned_data['filter_type'] == u"teams ranked by climbs":
+                                teams = []
+				climb_data_climbs = []
+				climb_data_team = []
+				climb_data = []
+                                teams_ = TeamData.objects.order_by('team_number')
+                                team_num = 0
+                                previous_team = 0
+                                for team in teams_:
+                                        team_num = team.team_number
+                                        if team_num != previous_team:
+                                                #calculate climbing percentage
+                                                count = 0
+                                                success = 0
+                                                for match in matches:
+                                                        if str(match.team_number) == str(team_num):
+                                                                if match.climber_success == u"climbed successfully":
+                                                                        success += 1
+								count += 1
+						if count != 0:
+							climb_data.append([team_num, (float(success)/float(count)) * 100])
+                                        previous_team = team_num
+                                context = {'climb_data': climb_data}
+                                return render(request, 'scout_app/filter.html', context)
+		else:
+			print form.errors
+	else:
+		form = TeamFilterForm()
+		context = {"id" : 2, 'form' : form}
+	return render(request, 'scout_app/view_data.html', context)
 
 def team_lookup(request, team_number):
 	auto_data = AutoData.objects.order_by('match_number')
 	teleop_data = TeleopData.objects.order_by('match_number')
+	comments_all = Comments.objects.order_by('scout')
+	comments_for_team = []
 	team_auto_data = []
 	team_teleop_data = []
 	teleop_gears_placed =[]
 	xAxis = []
+	gear_sum = 0
+	count = 0
 	#raw data in tables
 	for team in auto_data:
 		if team.team_number == int(team_number):
@@ -207,16 +305,38 @@ def team_lookup(request, team_number):
 		if team.team_number == int(team_number):
 			team_teleop_data.append(team)
 			teleop_gears_placed.append(team.gears_placed)
+	for gear in teleop_gears_placed:
+		gear_sum += gear
+		count += 1
+	gear_average = float(gear_sum)/float(count)
 
-	for team in team_teleop_data:
-		if str(team.team_number) == str(team_number):
-			xAxis.append(team.match_number)
+	count = 0
+	climb_count = 0
 
-	plt.plot(xAxis, teleop_gears_placed)
-	plt.ylabel("gears placed")
-	plt.xlabel("match number")
-	plt.savefig('/home/herm/Scouting-2017/scout_2017/scout_app/static/' + str(team_number) + '-gear-plot.png')
-	context = {'team_number' : team_number, 'team_auto_data' : team_auto_data, 'team_teleop_data' : team_teleop_data}
+	for climb in teleop_data:
+		if str(climb.team_number) == str(team_number):
+			if climb.climber_success == u"climbed successfully":
+				climb_count += 1
+			count += 1
+
+	climb_p = (float(climb_count)/float(count)) * 100
+
+	if request.method == 'POST':
+		form = CommentForm(request.POST)
+		if form.is_valid():
+			form = Comments(scout=request.user.username, comment=form.cleaned_data['comment'], team_number = team_number)
+			form.save()
+		else:
+			print form.errors
+	else:
+		form = CommentForm()
+
+	for comment in comments_all:
+		if str(comment.team_number) == str(team_number):
+			comments_for_team.append(comment)
+
+	new_other = OtherData(team_number=team_number, climb_percentage = climb_p, gear_average = gear_average)
+	context = {'team_number' : team_number, 'team_auto_data' : team_auto_data, 'team_teleop_data' : team_teleop_data, 'gear_average' : gear_average, 'climber_success': climb_p, 'form' : form, 'comments' : comments_for_team}
 	return render(request, 'scout_app/team_results.html', context)
 
 def match_lookup(request, match_number):
@@ -232,10 +352,12 @@ def my_bets(request):
 	current_scout_bets = []
 	context = {}
 	for bet in bets:
-		if bet.user == request.user.username and bet.claimed == False:
+		if str(bet.user) == str(request.user.username) and bet.claimed == False:
+			print " yoyoyoyoyoyoy " + str(bet)
 			current_scout_bets.append(bet)
 			context = {'bets' : current_scout_bets} 
 		else:
+			print "BET ALREADY CLAIMED"
 			context = {}
 
 	return render(request, 'scout_app/my_bets.html', context)
@@ -303,6 +425,33 @@ def view_bet(request, match_number):
 					elif str(bet.alliance_bet_on) == "Red Alliance":
 						percent_return = float(bet.money_bet)/float(red_money)
 						print "heyTYTT"
+	#organizes teams in the match
+	blue_odds = 0
+	red_odds = 0
+	blue_teams = []
+	red_teams = []
+	for match in matches:
+		if match.match_number == match_number:
+			if str(match.alliance_color) == "Blue Alliance":
+				blue_teams.append(int(match.team_number))
+			else:
+				red_teams.append(int(match.team_number))
+	#finds the alliance most likely to win
+	blue_climbs = 0
+	red_climbs = 0
+	for team in blue_teams:
+		for match in matches:
+			if str(match.climber_success) == "climbed successfully" and str(match.alliance_color) == "Blue Alliance": 
+				blue_climbs += 1
+
+        for team in red_teams:
+                for match in matches:
+                        if str(match.climber_success) == "climbed successfully" and str(match.alliance_color) == "Red Alliance": 
+                                red_climbs += 1
+
+	if blue_climbs > red_climbs:
+		print "ugh"
+
 	#finds the alliance that won
 	for match in matches:
 		if str(match.match_number) == str(match_number):
@@ -320,7 +469,7 @@ def view_bet(request, match_number):
 		winning_alliance = "tie"
 		#move pot money into the pot of the next match
 	if str(scout_choice) == str(winning_alliance):
-		print "percent return" + str(percent_return)
+		print "odds multiplier" + str(percent_return)
 		winnings = money_in_pot * percent_return
 
 		if current_bet.claimed == False:

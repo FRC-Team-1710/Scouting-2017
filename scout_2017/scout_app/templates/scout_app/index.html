@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 
 <html>
-	<link type="text/css" rel="stylesheet" href="stylesheet.css" />
+	{% load static %}
+	<link type="text/css" rel="stylesheet" href="{% static 'scout_app/stylesheet.css' %}" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<body>
 		<h1>Team 1710 Steamworks Scouting System</h1>
 		{% if user != 42 %}
 											<div class="links">
                         <a href = "/scout/scout_start/">Scout a Match</a>
-                        <a href = "/scout/view_data/">View Data</a>
-                        <a href = "/scout/register_scout/">Register</a>
-                        <a href = "/scout/scout_login/">Login</a>
+                        <a href = "/scout/view_data/">Team Lookup</a>
+			<a href = "/scout/filter_data/">Filter Data</a>
                         <a href = "/scout/logout/">Logout</a>
                         <a href = "/scout/bets/">My Bets</a>
 											</div>

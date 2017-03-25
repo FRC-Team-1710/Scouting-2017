@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 
 <html>
-<link type="text/css" rel="stylesheet" href="stylesheet.css" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	{% load static %}
-
-	<link rel="stylesheet" type="text/css" href="{% static 'scout_app/team_results_styles.css' %}" />
+        {% load static %}
+        <link type="text/css" rel="stylesheet" href="{% static 'scout_app/stylesheet.css' %}" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<body>
 		<h1> Results for {{ team_number }} </h1>
 		{% if team_auto_data %}
@@ -38,26 +36,44 @@
 				    <th>Gears Placed</th>
 				    <th>Shooter Accuracy</th>
 				    <th>Shooter Speed</th>
+				    <th>Floor Intake</th>
+				    <th>Dumper Bot</th>
 				    <th>Robot Speed</th>
-				    <th>Pilot Performance</th>
 				    <th>Climber Performance</th>
 				</tr>
 			{% for team in team_teleop_data %}
 				<tr>
-				    <th>{{ team.match_number }}</th>
-				    <th>{{ team.gears_placed }}</th>
-				    <th>{{ team.teleop_fuel_accuracy }}</th>
-				    <th>{{ team.teleop_fuel_speed }}</th>
-				    <th>{{ team.robot_speed }}</th>
-				    <th>{{ team.pilot_rating }}</th>
-				    <th>{{ team.climber_success }}</th>
+				    <td>{{ team.match_number }}</td>
+				    <td>{{ team.gears_placed }}</td>
+				    <td>{{ team.teleop_fuel_accuracy }}</td>
+				    <td>{{ team.teleop_fuel_speed }}</td>
+				    <td>{{ team.floor_intake }}</td>
+				    <td>{{ team.dumper_bot }}</td>
+				    <td>{{ team.robot_speed }}</td>
+				    <td>{{ team.climber_success }}</td>
 				</tr>
 			{% endfor %}
 			</table>
+		<h3>Teleop Gear Average: {{gear_average}}</h3>
+		<h3>Climber Success Rate: {{climber_success}}%</h3>
+                
+		<h2>Comments</h2>
+		{%for comment in comments %}
+			<div id="comment"><div id="comment-user"><h4>{{comment.scout}}<h4></div><div id="comment-body"><p>{{comment.comment}}</p></div></div>
+		{%endfor%}
+		<form action="/scout/team/{{team_number}}/" method="post">
+
+                {% csrf_token %}
+                {% for field in form.visible_fields %}
+                        {{ field.help_text }}<br />
+                        {{field }}<br />
+                {% endfor %}
+
+                <input type="submit" value="Comment" />
+
 		{% else %}
 			<p>No data for this team</p>
 		{% endif %}
-		<img src="/static/{{ team_number }}-gear-plot.png"/>
 	</body>
 
 </html>

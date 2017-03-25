@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+
+<html>
+        {% load static %}
+        <link type="text/css" rel="stylesheet" href="{% static 'scout_app/stylesheet.css' %}" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<body>
+		{%if gears%}
+			<h1>Most gears in a match (teleop)</h1>
+			{%for gear in gears%}
+				<h4><a href="/scout/team/{{gear.team_number}}">{{gear.team_number}} at {{gear.gears_placed}} gears</a></h3>
+			{%endfor%}
+		{%endif%}		
+
+		{%if perfect_teams%}
+			<h1>Perfect Climbers</h1>
+			{%for team in perfect_teams%}
+				<h4><a href="/scout/team/{{team}}">{{team}}</a></h4>
+			{%endfor%}
+		{%endif%}
+	
+		{%if climb_data %}
+			<h1>Team, Climb %</h1>
+			{%for climb in climb_data %}
+				<h4>{{climb}}</h4>
+			{%endfor%}
+		{%endif%}
+	</body>
+
+</html>

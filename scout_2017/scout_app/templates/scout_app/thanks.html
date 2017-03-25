@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+
+<html>
+        {% load static %}
+        <link type="text/css" rel="stylesheet" href="{% static 'scout_app/stylesheet.css' %}" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<body>
+		<h1> THANK YOU SO MUCH FOR SCOUTING I LOVE YOU</h1>
+		<h3>You've scouted {{matches_scouted}} matches! Keep up the good work!</h3>
+		<h6><a href="/scout/">{{ return_home }}</a></h6>
+		<h6><a href="/scout/bets/{{match_number}}">{{ motivation }}</a></h6>
+	</body>
+</html>

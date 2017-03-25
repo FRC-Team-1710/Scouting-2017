@@ -16,4 +16,6 @@ urlpatterns = [
     url(r'^logout/$', views.logout, name = 'logout'),
     url(r'^bets/$', views.my_bets, name = 'bets'),
     url(r'^bets/(?P<match_number>[0-9999]+)/$', views.view_bet, name = 'view_bet'),
+    url(r'^thanks/$', views.thanks, name="thanks"),
+    url(r'^filter_data/$', views.filter_data, name='filter_data'),
 ]

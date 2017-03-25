@@ -48,3 +48,20 @@ a:hover, input:hover {
 br {
   height: 0;
 }
+
+table, th, td {
+        border: 1px solid black;
+}
+
+#comment {
+	background-color: white
+}
+
+#comment-user {
+	text-align:center
+}
+
+#comment-body {
+	background-color: gray
+}
+
