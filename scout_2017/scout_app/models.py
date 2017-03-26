@@ -24,6 +24,7 @@ class AutoData(models.Model):
 	team_number = models.PositiveIntegerField(default = 0)
 	baseline_crossed = models.BooleanField(default=False)
 	auto_gears_placed = models.IntegerField(choices=GEAR_COUNTER, default = 0)
+	gear_attempted = models.CharField(choices=GEAR_CHOICES_AUTO, max_length = 100)
 	peg_placed_on = models.CharField(choices=GEAR_POSITION, default = 0, max_length = 100)
 	auto_fuel_accuracy = models.IntegerField(default = 0)
 	auto_fuel_speed = models.CharField(choices=SPEED_CHOICES, default = 0, max_length = 100)

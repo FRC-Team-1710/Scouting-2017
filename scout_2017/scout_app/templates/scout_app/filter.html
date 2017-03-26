@@ -9,7 +9,7 @@
 		{%if gears%}
 			<h1>Most gears in a match (teleop)</h1>
 			{%for gear in gears%}
-				<h4><a href="/scout/team/{{gear.team_number}}">{{gear.team_number}} at {{gear.gears_placed}} gears</a></h3>
+				<h4><a href="/scout/team/{{gear.0}}">{{gear.0}} at {{gear.1}} gears in match {{gear.2}}</a></h3>
 			{%endfor%}
 		{%endif%}		
 
@@ -21,11 +21,27 @@
 		{%endif%}
 	
 		{%if climb_data %}
-			<h1>Team, Climb %</h1>
+			<h1>Teams ranked by Climb Percentage</h1>
 			{%for climb in climb_data %}
 				<a href="/scout/team/{{climb.0}}/">{{climb.0}} at {{climb.1}}%</a>
 			{%endfor%}
 		{%endif%}
+
+                {%if teleop_fuel %}
+                        <h1>Teams ranked by most kPa scored in Teleop</h1>
+                        {%for team in teleop_fuel %}
+                                <a href="/scout/team/{{team.0}}/">{{team.0}} at {{team.1}} kPa in match {{team.2}}</a>
+                        {%endfor%}
+                {%endif%}
+
+                {%if auto_gear_success %}
+                        <h1>Teams ranked by gear-auto success rate</h1>
+                        {%for team in auto_gear_success %}
+                                <a href="/scout/team/{{team.0}}/">{{team.0}} at {{team.1}}% success</a>
+                        {%endfor%}
+                {%endif%}
+
+
 	</body>
 
 </html>

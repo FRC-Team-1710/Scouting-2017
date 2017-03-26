@@ -1,11 +1,22 @@
 TEAM_FILTER_CHOICES = (
 		(u"perfect climbers", u"perfect climbers"),
 		(u"most gears in teleop", u"most gears in teleop"),
-		(u"teams ranked by climbs", u"teams ranked by climbs")
+		(u"teams ranked by climbs", u"teams ranked by climbs"),
+		(u"teams ranked by kPa scored in teleop", u"teams ranked by kPa scored in teleop"),
+		(u"teams ranked by autonomous gear placing success", u"teams ranked by autonomous gear placing success"),
 		)
 
+GEAR_CHOICES_AUTO = (
+		(u" ", u" "),
+		(u"did not attempt", u"did not attempt"),
+		(u"pilot error", u"pilot error"),
+		(u"gear in bot", u"gear in bot"),
+		(u"missed the peg", u"missed the peg"),
+		(u"successfully placed", u"successfully placed"),
+	)
+
 ACCURACY_CHOICES = (
-		(0, ("unfilled")),
+		(0, (" ")),
 		(1, ("did not attempt")),
 		(2, ("poor accuracy")),
 		(3, ("A few went in")),
@@ -30,7 +41,7 @@ HOPPER_EFFICIENCY = (
                 (u"collected every ball", u"collected every single ball"))
 
 GEAR_POSITION = (
-		(u"unfilled", u"unfilled"),
+		(u" ", u" "),
 		(u"did not attempt", u"did not attempt"),
 		(u"left peg", u"left peg"),
 		(u"center peg", u"center peg"),
@@ -64,7 +75,7 @@ PILOT_RATING = (
 	)
 
 CLIMBER_SUCCESS = (
-		(u'unfilled', u'unfilled'),
+		(u' ', u' '),
 		(u'did not attempt', u'did not attempt'),
 		(u'did not press button', u'did not press button'),
 		(u'fell off rope', u'fell off rope'),
@@ -78,7 +89,7 @@ ALLIANCE_COLORS = (
 	)
 
 WINNING_ALLIANCE = (
-                (u'PLEASE SELECT THE WINNER', u'PLEASE SELECT THE WINNER'),
+                (u' ', u' '),
 		(u'Blue Alliance', u'Blue Alliance'),
                 (u'Red Alliance', u'Red Alliance'),
         )

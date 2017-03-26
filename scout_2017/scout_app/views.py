@@ -246,8 +246,23 @@ def filter_data(request):
 		if form.is_valid():
 			print form.cleaned_data['filter_type']
  			if form.cleaned_data['filter_type'] == u"most gears in teleop":
-				matches = TeleopData.objects.order_by('-gears_placed')
-				context = {'gears' : matches}
+				teams = TeleopData.objects.order_by('team_number')
+				team_gears = []
+				previous_team = 0
+				previous_gears = 0
+				count = 0
+				for team in teams:
+					if team.team_number == previous_team and team.gears_placed > previous_gears:
+						#remove the previous, smaller one if it was appended and append the new one
+						if len(team_gears) != 0 and str(team_gears[len(team_gears) - 1][0]) == str(team.team_number):
+							del team_gears[(len(team_gears) - 1)]
+							team_gears.append([team.team_number, team.gears_placed, team.match_number])
+						else:
+							team_gears.append([team.team_number, team.gears_placed, team.match_number])
+
+					previous_team = team.team_number
+					previous_gears = team.gears_placed
+				context = {'gears' : sorted(team_gears, key = lambda x : x[1], reverse=True)}
 				return render(request, 'scout_app/filter.html', context)
 			elif form.cleaned_data['filter_type'] == u"perfect climbers":
 				teams = []
@@ -299,6 +314,47 @@ def filter_data(request):
                                         previous_team = team_num
                                 context = {'climb_data': sorted(climb_data, key = lambda x : x[1], reverse=True)}
                                 return render(request, 'scout_app/filter.html', context)
+			elif form.cleaned_data['filter_type'] == u"teams ranked by kPa scored in teleop":
+				teams = TeleopData.objects.order_by('team_number')
+				teams_fuel = []
+				previous_team = 0
+				previous_fuel = 0
+				for team in teams:
+					if team.teleop_fuel_accuracy != 0:
+						teams_fuel.append([team.team_number, team.teleop_fuel_accuracy, team.match_number])
+				context = {'teleop_fuel' : sorted(teams_fuel, key = lambda x : x[1], reverse = True)}
+				return render(request, 'scout_app/filter.html', context)
+			else:
+				#auto gear success
+				matches = AutoData.objects.order_by('-auto_gears_placed')
+				teams = TeamData.objects.order_by('team_number')
+				previous_team = 0
+				count = 0
+				success = 0
+				success_percent = 0.0
+				teams_success = []
+				current_team = 0
+
+				for team in teams:
+					current_team = team.team_number
+					if team.team_number != previous_team:
+						count = 0
+						success = 0
+						for match in matches:
+							if match.team_number == current_team:
+								if match.gear_attempted == u"successfully placed":
+									count += 1
+									success += 1
+								elif match.gear_attempted == u"did not attempt":
+									count += 0
+								else:
+									count += 1
+						if count != 0:
+							success_percent = float(success)/float(count)
+						teams_success.append([current_team, success_percent * 100])
+					previous_team = team.team_number
+				context = {'auto_gear_success' : sorted(teams_success, key =  lambda x : x[1], reverse = True)}
+				return render(request, 'scout_app/filter.html', context)
 		else:
 			print form.errors
 	else:

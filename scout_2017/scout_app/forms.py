@@ -19,6 +19,7 @@ class AutoInfoForm(forms.ModelForm):
 
 	baseline_crossed = forms.BooleanField(help_text="did your team cross the baseline?", required = False)
 	auto_gears_placed = forms.IntegerField(help_text="how many gears were placed by your team in auto", widget=forms.Select(choices=GEAR_COUNTER), required = True)
+	gear_attempted = forms.CharField(help_text="how successful were they at placing a gear", widget=forms.Select(choices=GEAR_CHOICES_AUTO), required = True)
 	peg_placed_on = forms.CharField(help_text="What peg was the gear placed on?", widget=forms.Select(choices=GEAR_POSITION), required=True)
 	auto_fuel_accuracy = forms.IntegerField(help_text="How much kPa was racked up? (look @ scoreboard)", required = False)
 	auto_fuel_speed = forms.CharField(help_text="How fast did your team shoot in auto", widget=forms.Select(choices=SPEED_CHOICES), required = False)
