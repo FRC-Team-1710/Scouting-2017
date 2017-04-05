@@ -3,7 +3,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext, loader
 from django.contrib.auth.decorators import login_required
 from scout_app.models import TeamData, AutoData, TeleopData, BetHandler, Scout, Bet, OtherData, Comments, Teams
-from scout_app.forms import forms, TeamInfoForm, AutoInfoForm, TeleopInfoForm, TeamLookupForm, PlaceBetForm, ScoutRegister, ScoutLogin, TeamFilterForm, CommentForm
+from scout_app.forms import forms, TeamInfoForm, AutoInfoForm, TeleopInfoForm,MatchLookupForm, TeamLookupForm, PlaceBetForm, ScoutRegister, ScoutLogin, TeamFilterForm, CommentForm
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
@@ -64,11 +64,13 @@ def scout_login(request):
 
 @login_required
 def scout_start(request):
+	team_data = TeamData.objects.order_by('match_number')
 	errors = None
 	scouts = Scout.objects.order_by('user')
 	matches = TeamData.objects.order_by('-match_number')
 	teams = Teams.objects.order_by('team_number')
 	match_played = False
+	already_submitted = False
 	team_exists = False
 	match_count = 0
 
@@ -85,12 +87,22 @@ def scout_start(request):
 			for team in teams:
 				if str(form.cleaned_data['team_number']) == str(team.team_number):
 					team_exists = True
-			if match_played == False and team_exists == True:
+
+                        #makes sure data has not been submitted already to prevent user from going back and re submittiing
+                        for match in team_data:
+                                if form.cleaned_data['match_number'] == match.match_number and form.cleaned_data['team_number'] == match.team_number:
+                                        already_submitted = True
+
+			if match_played == False and team_exists == True and already_submitted == False:
 				new_team = TeamData(match_number = form.cleaned_data['match_number'], team_number = form.cleaned_data['team_number'], alliance_color = form.cleaned_data['alliance_color'], current_scout=request.user.username)
 				new_team.save()
 				return HttpResponseRedirect('/scout/place_bets/')
-			else:
-				errors = "That team is not competing here"
+			elif match_played == True:
+				errors = "Match has already been played"
+			elif team_exists == False:
+				errors = "Team is not here/doesn't exist"
+			elif already_submitted == True:
+				errors = "This team is already being scouted. If this is incorrect, talk to Megan, Isaac, or Jake"
         	else:
         	    print form.errors
     	else:
@@ -141,8 +153,11 @@ def place_bets(request):
 def auto_input(request):
 	matches = TeamData.objects.order_by('match_number')
 	scouts = Scout.objects.order_by('user')
+	auto_data = AutoData.objects.order_by('match_number')
         team_num = 0
         match_num = 0
+	already_submitted = False
+
         for match in matches:
         	if str(match.current_scout) == str(request.user.username):
         		match_num = match.match_number
@@ -151,8 +166,15 @@ def auto_input(request):
 	if request.method == 'POST':
 		form = AutoInfoForm(request.POST)
 		if form.is_valid():
-			form.save()
-			return teleop_input(request)
+			#makes sure data has not been submitted already to prevent user from going back and re submittiing
+			for match in auto_data:
+				if form.cleaned_data['match_number'] == match.match_number and form.cleaned_data['team_number'] == match.team_number:
+					already_submitted = True
+			if already_submitted == True: 
+				return teleop_input(request)
+			else:
+				form.save()
+				return teleop_input(request)
 		else:
 			print form.errors
 	else:
@@ -169,7 +191,9 @@ def auto_input(request):
 def teleop_input(request):
         matches = TeamData.objects.order_by('match_number')
 	scouts = Scout.objects.order_by('user')
+	tele_data = TeleopData.objects.order_by('match_number')
         team_num = 0
+	already_submitted = False
         match_num = 0
         for match in matches:
         	if str(match.current_scout) == str(request.user.username):
@@ -180,7 +204,13 @@ def teleop_input(request):
 	if request.method == 'POST':
                 form = TeleopInfoForm(request.POST)
                 if form.is_valid():
-                        form.save()
+                        #makes sure data has not been submitted already to prevent user from going back and re submittiing
+                        for match in tele_data:
+                                if form.cleaned_data['match_number'] == match.match_number and form.cleaned_data['team_number'] == match.team_number:
+                                        already_submitted = True
+                        if already_submitted == False:
+                                form.save()
+
 			#give scout 50 scheckles and add a match to their matches scouted count
                         for scout in scouts:
 				if str(scout.user) == str(request.user.username):
@@ -362,6 +392,18 @@ def filter_data(request):
 		context = {"id" : 2, 'form' : form}
 	return render(request, 'scout_app/view_data.html', context)
 
+def match_search(request):
+	if request.method == 'POST':
+		form = MatchLookupForm(request.POST)
+		if form.is_valid():
+			return match_lookup(request, form.cleaned_data['match_number'])
+		else:
+			print form.errors
+	else:
+		form = MatchLookupForm()
+
+	return render(request, 'scout_app/match_search.html', {'form' : form})
+
 def team_lookup(request, team_number):
 	auto_data = AutoData.objects.order_by('match_number')
 	teleop_data = TeleopData.objects.order_by('match_number')
@@ -438,6 +480,8 @@ def match_lookup(request, match_number):
 	#scrapes north star schedule for match schedule
 	scope = ['https://spreadsheets.google.com/feeds']
 	row_num = 0
+	tele_data = TeleopData.objects.order_by('match_number')
+	auto_data = AutoData.objects.order_by('match_number')
 	credentials = ServiceAccountCredentials.from_json_keyfile_name('/home/herm/Scouting-1df27c55e93e.json', scope)
 
 	gc = gspread.authorize(credentials)
@@ -450,8 +494,15 @@ def match_lookup(request, match_number):
 		row_num += 1
 		if str(match) == 'Quals ' + str(match_number):
 			teams_in_match = wks.row_values(row_num)
+	#filters out empty cells
+	count = 0
+	for team in teams_in_match:
+		count +=1
+		if team == '':
+			del teams_in_match[count-1]
 
-	context = {'match_number' : match_number, 'blue_teams' : teams_in_match[1:6], 'red_teams' : teams_in_match[7:12]}
+	#calulates cimb % for each team
+	context = {'match_number' : match_number, 'blue_teams' : teams_in_match[1:4], 'red_teams' : teams_in_match[4:7]}
 	return render(request, 'scout_app/match_results.html', context)
 
 def logout(request):
@@ -482,15 +533,15 @@ def view_bet(request, match_number):
 	red_win_count = 0
 	current_scout = None
 	scout_choice = ""
-	money_in_pot = 0
+	money_in_pot = 500
 	winning_alliance = None
 	bet_count = 0
 	red_bet_count = 0
 	blue_bet_count = 0
 	percent_of_pot = 0.0
 	context = {}
-	blue_money = 0
-	red_money = 0
+	blue_money = 250
+	red_money = 250
 	percent_return = 0.0
 	winnings = 0
 	#calculate the money in the pot for that match

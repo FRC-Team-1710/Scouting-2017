@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+
+<html>
+        {% load static %}
+        <link type="text/css" rel="stylesheet" href="{% static 'scout_app/stylesheet.css' %}" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<body>	
+	
+		<h1>Match Search</h1>	
+
+                <form action="/scout/view_match/" method="post">
+
+                {% csrf_token %}
+                {% for field in form.visible_fields %}
+                        {{ field.errors }}
+                        {{ field.help_text }}<br />
+                        {{field }}<br />
+                {% endfor %}
+                <input type="submit" value="search" />
+
+
+	</body>
+
+</html>

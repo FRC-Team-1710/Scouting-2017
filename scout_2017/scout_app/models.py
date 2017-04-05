@@ -19,6 +19,9 @@ class TeamData(models.Model):
 	alliance_color = models.CharField(choices=ALLIANCE_COLORS, max_length=100, default=0)
 	current_scout = models.CharField(max_length=100, default = 0)
 
+	def __unicode__(self):
+		return 'Team ' + str(self.team_number) + ' Match ' + str(self.match_number)
+
 class AutoData(models.Model):
 	match_number = models.PositiveIntegerField(default = 0)
 	team_number = models.PositiveIntegerField(default = 0)
@@ -29,6 +32,9 @@ class AutoData(models.Model):
 	auto_fuel_accuracy = models.IntegerField(default = 0)
 	auto_fuel_speed = models.CharField(choices=SPEED_CHOICES, default = 0, max_length = 100)
 	hopper_efficiency = models.CharField(choices=HOPPER_EFFICIENCY, default = 0, max_length = 100)
+
+        def __unicode__(self):
+                return 'Team ' + str(self.team_number) + ' Match ' + str(self.match_number)
 
 class TeleopData(models.Model):
 	match_number = models.PositiveIntegerField(default = 0)
@@ -41,6 +47,9 @@ class TeleopData(models.Model):
 	robot_speed = models.CharField(choices=ROBOT_SPEED, max_length = 100, default = 0)
 	climber_success = models.CharField(choices=CLIMBER_SUCCESS, max_length = 100, default = 0)
 	winning_alliance = models.CharField(choices=WINNING_ALLIANCE, max_length = 100, default = 0)
+
+        def __unicode__(self):
+                return 'Team ' + str(self.team_number) + ' Match ' + str(self.match_number)
 
 class Scout(models.Model):
 	user = models.CharField(max_length = 100, default = 0)

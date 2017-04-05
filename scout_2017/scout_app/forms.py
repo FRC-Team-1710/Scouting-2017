@@ -51,6 +51,9 @@ class TeleopInfoForm(forms.ModelForm):
 class TeamLookupForm(forms.Form):
 	team_number = forms.IntegerField(help_text="Team Lookup", required = True)
 
+class MatchLookupForm(forms.Form):
+	match_number = forms.IntegerField(help_text="Match Lookup", required = True)
+
 class TeamFilterForm(forms.Form):
 	filter_type = forms.CharField(help_text="Filter data by...", widget=forms.Select(choices=TEAM_FILTER_CHOICES), required = False)
 
