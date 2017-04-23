@@ -459,15 +459,14 @@ def team_lookup(request, team_number):
 
 def export_raw(request):
 	import csv
-	import os
-	import zipfile
 	teleop_data = TeleopData.objects.order_by('match_number')
 	auto_data = AutoData.objects.order_by('match_number')
 	context = None
 
 	response = HttpResponse(content_type='text/csv')
-	responseTwo = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="raw_teleop.csv"'
+
+    
+    response['Content-Disposition'] = 'attachment; filename="raw_teleop.csv", attachment; filename="raw_auto.csv"'
 
 	with open('raw_teleop.csv', 'wb') as csvfile:
 		raw_data = csv.writer(response)

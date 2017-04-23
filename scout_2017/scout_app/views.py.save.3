@@ -1,4 +1,3 @@
-
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext, loader
@@ -459,30 +458,23 @@ def team_lookup(request, team_number):
 
 def export_raw(request):
 	import csv
-	import os
-	import zipfile
 	teleop_data = TeleopData.objects.order_by('match_number')
 	auto_data = AutoData.objects.order_by('match_number')
 	context = None
 
 	response = HttpResponse(content_type='text/csv')
-	responseTwo = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="raw_teleop.csv"'
 
-	with open('raw_teleop.csv', 'wb') as csvfile:
+        response['Content-Disposition'] = 'attachment; filename="kc_raw.csv"'
+
+	with open('kc_raw.csv', 'wb') as csvfile:
+		match_row = []
 		raw_data = csv.writer(response)
-		raw_data.writerow(['Match Number', 'Team Number', 'Gears Placed', 'Fuel Scored', 'Climber Success'])
+		raw_data.writerow(['Match Number', 'Team Number', 'Gears Placed', 'Fuel Scored', 'Climber Success', 'auto gears', 'auto kpa', 'baseline cross'])
 		for match in teleop_data:
 			match_row = [str(match.match_number), str(match.team_number), str(match.gears_placed), str(match.teleop_fuel_accuracy), str(match.climber_success)]
-                        raw_data.writerow(match_row)
-
-	with open('raw_auto.csv', 'wb') as csvfile:
-		raw_data = csv.writer(response)
-		raw_data.writerow(['Match Number', 'Team Number', 'Auto Gears', 'Auto Fuel'])
-		for match in auto_data:
-			match_row = [str(match.match_number), str(match.team_number), str(match.auto_gears_placed), str(match.auto_fuel_accuracy)]
 			raw_data.writerow(match_row)
 
+		for match in Auto_Data:
 	return response
 
 def match_lookup(request, match_number):
