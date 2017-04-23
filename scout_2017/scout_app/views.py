@@ -461,27 +461,36 @@ def export_raw(request):
 	import csv
 	import os
 	import zipfile
+
+	team_data = TeamData.objects.order_by('match_number')
 	teleop_data = TeleopData.objects.order_by('match_number')
 	auto_data = AutoData.objects.order_by('match_number')
 	context = None
 
 	response = HttpResponse(content_type='text/csv')
-	responseTwo = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="raw_teleop.csv"'
+        response['Content-Disposition'] = 'attachment; filename="raw_data.csv"'
 
-	with open('raw_teleop.csv', 'wb') as csvfile:
+	with open('raw_data.csv', 'wb') as csvfile:
 		raw_data = csv.writer(response)
-		raw_data.writerow(['Match Number', 'Team Number', 'Gears Placed', 'Fuel Scored', 'Climber Success'])
-		for match in teleop_data:
-			match_row = [str(match.match_number), str(match.team_number), str(match.gears_placed), str(match.teleop_fuel_accuracy), str(match.climber_success)]
-                        raw_data.writerow(match_row)
-
-	with open('raw_auto.csv', 'wb') as csvfile:
-		raw_data = csv.writer(response)
-		raw_data.writerow(['Match Number', 'Team Number', 'Auto Gears', 'Auto Fuel'])
-		for match in auto_data:
-			match_row = [str(match.match_number), str(match.team_number), str(match.auto_gears_placed), str(match.auto_fuel_accuracy)]
-			raw_data.writerow(match_row)
+		raw_data.writerow(['Match Number', 'Team Number', 'alliance color', 'Auto Gears Placed', 'Auto Peg Used', 'Auto Fuel Scored', 'Teleop Gears Placed', 'Teleop Fuel Scored', 'Robot Speed', 'Climber Success', 'Winning Alliance'])
+		for team in team_data:
+			row = []
+			for auto in auto_data:
+				if auto.team_number == team.team_number and auto.match_number == team.match_number:
+					row.append(team.match_number)
+					row.append(team.team_number)
+					row.append(team.alliance_color)
+					row.append(auto.auto_gears_placed)
+					row.append(auto.peg_placed_on)
+					row.append(auto.auto_fuel_accuracy)
+			for tele in teleop_data:
+				if tele.team_number == team.team_number and tele.match_number == team.match_number:
+					row.append(tele.gears_placed)
+					row.append(tele.teleop_fuel_accuracy)
+					row.append(tele.robot_speed)
+					row.append(tele.climber_success)
+					row.append(tele.winning_alliance)
+			raw_data.writerow(row)
 
 	return response
 
