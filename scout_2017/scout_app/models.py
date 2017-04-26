@@ -47,7 +47,7 @@ class TeleopData(models.Model):
 	robot_speed = models.CharField(choices=ROBOT_SPEED, max_length = 100, default = 0)
 	climber_success = models.CharField(choices=CLIMBER_SUCCESS, max_length = 100, default = 0)
 	winning_alliance = models.CharField(choices=WINNING_ALLIANCE, max_length = 100, default = 0)
-
+	robot_strat = models.CharField(choices=STRAT_CHOICES, max_length = 100, default = 0)
         def __unicode__(self):
                 return 'Team ' + str(self.team_number) + ' Match ' + str(self.match_number)
 

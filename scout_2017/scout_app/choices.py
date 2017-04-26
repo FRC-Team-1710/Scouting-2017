@@ -6,6 +6,13 @@ TEAM_FILTER_CHOICES = (
 		(u"teams ranked by autonomous gear placing success", u"teams ranked by autonomous gear placing success"),
 		)
 
+STRAT_CHOICES = (
+		(u"Defense", u"Defense"),
+		(u"Gear Cycling", u"Gear Cycling"),
+		(u"Fuel Shooting", u"Fuel Shooting"),
+		(u"Other (see comments)", u"Other (please make a comment)"),
+	)
+
 GEAR_CHOICES_AUTO = (
 		(u" ", u" "),
 		(u"did not attempt", u"did not attempt"),

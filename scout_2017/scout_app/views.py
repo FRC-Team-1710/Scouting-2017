@@ -73,6 +73,12 @@ def scout_start(request):
 	already_submitted = False
 	team_exists = False
 	match_count = 0
+        current_scout = None
+        scouts = Scout.objects.order_by('user')
+        for scout in scouts:
+       	        if scout.user == request.user.username:
+               	        current_scout = scout
+
 
 	if request.method == 'POST':
         	form = TeamInfoForm(request.POST)
@@ -82,8 +88,14 @@ def scout_start(request):
 					match_count += 1
 					print "sweet yeet " + str(match_count) 
 					if match_count >= 6:
-						errors = "Match Already Played"
-						match_played = True
+						#if 6 instances of this match exists, it checks to see if the user trying to get in has 
+						#created one of those instances. If not, the match was already played. If so, the user 
+						#probably closed out of chrome 
+						if str(request.user.username) == str(form.cleaned_data['current_sout']):
+							return HttpResponseRedirect('/scout/place_bets/')
+						else:
+							errors = "Match Already Played"
+							match_played = True
 			for team in teams:
 				if str(form.cleaned_data['team_number']) == str(team.team_number):
 					team_exists = True
@@ -102,9 +114,11 @@ def scout_start(request):
 			elif team_exists == False:
 				errors = "Team is not here/doesn't exist"
 			elif already_submitted == True:
-				errors = "This team is already being scouted. If this is incorrect, talk to Megan, Isaac, or Jake"
-        	else:
-        	    print form.errors
+	                        return HttpResponseRedirect('/scout/place_bets/')
+			else:
+				errors = "3130"
+		else:
+        		print form.errors
     	else:
         	form = TeamInfoForm()
 

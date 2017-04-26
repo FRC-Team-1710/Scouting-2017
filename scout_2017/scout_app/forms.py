@@ -41,6 +41,8 @@ class TeleopInfoForm(forms.ModelForm):
 	floor_intake = forms.BooleanField(help_text="do they collect balls from the floor?",  required = False)
 	dumper_bot = forms.BooleanField(help_text="does this team dump fuel into the low boiler?", required = False)
 
+	robot_strat = forms.CharField(help_text="What was this team's strategy?", widget=forms.Select(choices=STRAT_CHOICES), required = True)
+
 	climber_success = forms.CharField(help_text="Did their robot climb?", widget=forms.Select(choices=CLIMBER_SUCCESS), required = False)
 	winning_alliance = forms.CharField(help_text="What alliance won?", widget=forms.Select(choices=WINNING_ALLIANCE), required = True)
 
